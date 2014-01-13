@@ -49,13 +49,7 @@ module rc4_state_mem(
                      input wire  [7 : 0] k_read_addr,
                      output wire [7 : 0] k_read_data,
                      
-                     input wire          write_enable,
-                     
-                     input wire [7 : 0]  i_write_addr,
-                     input wire [7 : 0]  i_write_data,
-                     
-                     input wire [7 : 0]  j_write_addr,
-                     input wire [7 : 0]  j_write_data
+                     input wire          swap
                     );
 
   
