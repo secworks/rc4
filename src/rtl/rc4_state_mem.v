@@ -3,7 +3,7 @@
 // rc4_state_mem.v
 // ---------------
 // Verilog 2001 implementation of the state memory for the RC4 
-// stream cipher.
+// stream cipher. The smem handles state byte swap internally.
 //
 //
 // Copyright (c) 2013 Secworks Sweden AB
@@ -40,6 +40,8 @@ module rc4_state_mem(
                      input wire          clk,
                      input wire          reset_n,
                      
+                     input wire          swap,
+                     
                      input wire  [7 : 0] i_read_addr,
                      output wire [7 : 0] i_read_data,
                      
@@ -47,9 +49,7 @@ module rc4_state_mem(
                      output wire [7 : 0] j_read_data,
                      
                      input wire  [7 : 0] k_read_addr,
-                     output wire [7 : 0] k_read_data,
-                     
-                     input wire          swap
+                     output wire [7 : 0] k_read_data
                     );
 
   
