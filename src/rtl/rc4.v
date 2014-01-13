@@ -82,12 +82,37 @@ module rc4(
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
-              
+  reg [7 : 0] idata;
+  reg [7 : 0] jdata;
+
+  reg [7 : 0] kp_new;
+  reg [7 : 0] kdata;
+
+  reg smem_reset_n;
+  reg smem_init;
+
+  reg smem_swap;
+
   
   //----------------------------------------------------------------
   // Module instantiantions.
   //----------------------------------------------------------------
+  rc4_state_mem smem(
+                     .clk(clk),
+                     .reset_n(smem_reset_n),
 
+                     .swap(smem_swap),
+                     
+                     .i_read_addr(ip_new),
+                     .i_read_data(idata),
+
+                     .j_read_addr(jp_new),
+                     .j_read_data(jdata),
+
+                     .k_read_addr(kp_new),
+                     .k_read_data(kdata)
+                    );
+  
   
   //----------------------------------------------------------------
   // Concurrent connectivity for ports etc.
@@ -120,6 +145,17 @@ module rc4(
         end
     end // reg_update
 
+
+  //----------------------------------------------------------------
+  // rc4_logic
+  //----------------------------------------------------------------
+  alway @*
+    begin : rc4_logic
+      ip_new = ip_reg + 1'h01;
+      jp_new = jp_reg + idata;
+      kp_new = ipdata + jdata;
+    end // rc4_logic
+  
   
   //----------------------------------------------------------------
   // rc4_ctrl_fsm
@@ -127,6 +163,9 @@ module rc4(
   //----------------------------------------------------------------
   always @*
     begin : rc4_ctrl_fsm
+      smem_init = 0;
+      smem_swap = 0;
+
       sha256_ctrl_new  = CTRL_IDLE;
       sha256_ctrl_we   = 0;
 
