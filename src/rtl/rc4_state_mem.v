@@ -2636,6 +2636,42 @@ module rc4_state_mem(
             end
         end
     end // reg_update
+
+  //----------------------------------------------------------------
+  // swap_bytes
+  //
+  // if swap is enabled swaps bytes pointed to by i_read_addr
+  // and j_read_addr. If the pointers point to the same
+  // state element, the second write operation will not
+  // be done.
+  //----------------------------------------------------------------
+  always @*
+    begin : swap_bytes
+      s0x00 = 8'h00;
+      
+      if (swap)
+        begin
+          // First write operation.
+          case (i_read_addr)
+            0x00:
+              begin
+                s0x00_new = j_read_data;
+                s0x00_we  = 1;
+              end
+          endcase // case (i_read_addr)
+          
+          if (j_read_addr != i_read_addr)
+            begin
+              case (j_read_addr)
+                0x00:
+                  begin
+                    s0x00_new = i_read_data;
+                    s0x00_we  = 1;
+                  end
+              endcase // case (i_read_addr)
+            end
+        end
+    end // swap_bytes
     
 endmodule // rc4_state_mem
 
