@@ -90,10 +90,8 @@ module rc4(
   reg [7 : 0] kp_new;
   reg [7 : 0] kdata;
 
-  reg smem_reset_n;
-  reg smem_init;
-
   reg smem_swap;
+  reg smem_init;
 
   
   //----------------------------------------------------------------
@@ -101,8 +99,9 @@ module rc4(
   //----------------------------------------------------------------
   rc4_state_mem smem(
                      .clk(clk),
-                     .reset_n(smem_reset_n),
+                     .reset_n(reset_n),
 
+                     .swap(smem_init),
                      .swap(smem_swap),
                      
                      .i_read_addr(ip_new),

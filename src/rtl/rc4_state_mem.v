@@ -40,6 +40,7 @@ module rc4_state_mem(
                      input wire          clk,
                      input wire          reset_n,
                      
+                     input wire          init,
                      input wire          swap,
                      
                      input wire  [7 : 0] i_read_addr,
