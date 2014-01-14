@@ -55,6 +55,17 @@ for i in range(256):
     print("            end")
     print("")
 
+
+# Key mux. (Not really for state mem.)
+for i in range(256):
+    print("        0x%02x:" % i)
+    print("          begin")
+    print("            tmp_key_data = 0x%02x;" % i)
+    print("          end")
+    print("")
+
+
+
 #=======================================================================
 # gen_rc4_state_mem.py
 #=======================================================================
