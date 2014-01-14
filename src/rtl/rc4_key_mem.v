@@ -43,7 +43,7 @@ module rc4_key_mem(
                    input wire            init,
 
                    input wire  [255 : 0] key,
-                   input wire  [5 : 0]   key_size,
+                   input wire            key_size,
                      
                    input wire  [7 : 0]   key_addr,
                    output wire [7 : 0]   key_data
@@ -53,12 +53,19 @@ module rc4_key_mem(
   //----------------------------------------------------------------
   // Registers including update variables and write enable.
   //----------------------------------------------------------------
-  
+  reg [255 : 0] key_reg;
+  reg           size;
   
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
+  reg [7 : 0] ]tmp_key_data;
   
+
+  //----------------------------------------------------------------
+  //----------------------------------------------------------------
+  assign key_data = tmp_key_data;
+
   
   //----------------------------------------------------------------
   // reg_update
@@ -70,13 +77,41 @@ module rc4_key_mem(
     begin : reg_update
       if (!reset_n)
         begin
+          key_reg <= 256'h0000000000000000000000000000000000000000000000000000000000000000;
+          size <= 0;
         end
       else
         begin
-
+          if (init)
+            begin
+              key_reg <= key;
+              size = key_size;
+            end
         end
     end // reg_update
-    
+
+  always @*
+    begin : read_key_data
+      reg [7 : 0] addr;
+      
+      if (size)
+        begin
+          addr = key_addr;
+        end
+      else
+        begin
+          addr = {1'b0, key_addr[6 : 0]};
+        end
+
+      case (addr)
+
+        default:
+          begin
+            tmp_key_data = 8'h00;
+          end
+      endcase // case (addr)
+      
+    end // read_key_data
 endmodule // rc4_key_mem
 
 //======================================================================
