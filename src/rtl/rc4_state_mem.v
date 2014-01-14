@@ -1095,7 +1095,7 @@ module rc4_state_mem(
   //----------------------------------------------------------------
   always @ (posedge clk)
     begin : reg_update
-      if (!reset_n)
+      if ((!reset_n) || (init))
         begin
           s0x00_reg <= 8'h00;
           s0x01_reg <= 8'h01;
