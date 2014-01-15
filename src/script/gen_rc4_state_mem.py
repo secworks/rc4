@@ -57,10 +57,12 @@ for i in range(256):
 
 
 # Key mux. (Not really for state mem.)
-for i in range(256):
+for i in range(32):
+    high = 255 - i * 8
+    low = high - 7
     print("        0x%02x:" % i)
     print("          begin")
-    print("            tmp_key_data = 0x%02x;" % i)
+    print("            tmp_key_data = key_reg[%03d : %03d];" % (high, low))
     print("          end")
     print("")
 
