@@ -43,11 +43,12 @@ module rc4(
            
            input wire          init,
            input wire          next,
-           
-           input wire [7 : 0]  key_byte,
-           input wire [7 : 0]  key_address,
-           input wire [4 : 0]  key_size,
            input wire          rfc4345_mode,
+           
+           input wire [7 : 0]  key_data,
+           input wire [7 : 0]  key_addr,
+           input wire          key_write,
+           input wire [4 : 0]  key_size,
            
            output wire [7 : 0] keystream_byte,
            output wire         keystream_valid
@@ -93,6 +94,10 @@ module rc4(
   reg smem_swap;
   reg smem_init;
 
+  reg kmem_init;
+  reg [5 : 0] kmem_addr;
+  reg [7 : 0] kmem_data;
+  
   
   //----------------------------------------------------------------
   // Module instantiantions.
@@ -101,7 +106,7 @@ module rc4(
                      .clk(clk),
                      .reset_n(reset_n),
 
-                     .swap(smem_init),
+                     .init(smem_init),
                      .swap(smem_swap),
                      
                      .i_read_addr(ip_new),
@@ -114,6 +119,21 @@ module rc4(
                      .k_read_data(kdata)
                     );
   
+  rc4_key_mem kmem(
+                   .clk(clk),
+                   .reset_n(reset_n),
+                   
+                   .init(kmem_init),
+
+                   .key_write_addr(key_addr),
+                   .key_write_data(key_data),
+                   .key_write(key_write),
+                   .key_size(key_size),
+                   
+                   .key_read_addr(kmem_addr),
+                   .key_read_datak(kmem_data)
+                  );
+
   
   //----------------------------------------------------------------
   // Concurrent connectivity for ports etc.
@@ -167,9 +187,10 @@ module rc4(
       smem_init = 0;
       smem_swap = 0;
 
-      sha256_ctrl_new  = CTRL_IDLE;
-      sha256_ctrl_we   = 0;
-
+      kmem_init = 0;
+      
+      rc4_ctrl_new  = CTRL_IDLE;
+      rc4_ctrl_we   = 0;
       
       case (rc4_ctrl_reg)
         CTRL_IDLE:

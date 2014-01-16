@@ -37,16 +37,18 @@
 //======================================================================
 
 module rc4_key_mem(
-                   input wire            clk,
-                   input wire            reset_n,
+                   input wire          clk,
+                   input wire          reset_n,
                      
-                   input wire            init,
+                   input wire          init,
 
-                   input wire  [255 : 0] key,
-                   input wire            key_size,
+                   input wire  [5 : 0] key_addr,
+                   input wire  [7 : 0] key_data,
+                   input wire          key_write,
+                   input wire          key_size,
                      
-                   input wire  [7 : 0]   key_addr,
-                   output wire [7 : 0]   key_data
+                   input wire  [5 : 0] key_read_addr,
+                   output wire [7 : 0] key_read_data
                   );
 
   
