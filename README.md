@@ -17,6 +17,11 @@ Too early for that.
 
 
 ## Status ##
+**(2014-01-17):** Most parts of the functionality is done. The key size
+has been limited to 128 and 256 bits for the first version. The RTL is
+still not complete and no testbench is available.
+
+
 **(2014-01-13):** Repo init.
 
 
