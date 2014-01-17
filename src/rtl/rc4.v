@@ -48,7 +48,7 @@ module rc4(
            input wire [7 : 0]  key_data,
            input wire [7 : 0]  key_addr,
            input wire          key_write,
-           input wire [4 : 0]  key_size,
+           input wire          key_size,
            
            output wire [7 : 0] keystream_byte,
            output wire         keystream_valid
