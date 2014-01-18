@@ -50,7 +50,7 @@ module rc4(
            input wire          key_write,
            input wire          key_size,
            
-           output wire [7 : 0] keystream_byte,
+           output wire [7 : 0] keystream_data,
            output wire         keystream_valid
           );
   
@@ -65,15 +65,19 @@ module rc4(
   //----------------------------------------------------------------
   reg [7 : 0] ip_reg;
   reg [7 : 0] ip_new;
-  reg         ip_we;
 
   reg [7 : 0] jp_reg;
   reg [7 : 0] jp_new;
-  reg         jp_we;
 
   reg keystream_valid_reg;
   reg keystream_valid_new;
   reg keystream_valid_we;
+
+  reg [9 : 0] rc4_ctr_reg;
+  reg [9 : 0] rc4_ctr_new;
+  reg         rc4_ctr_rst;
+  reg         rc4_ctr_inc;
+  reg         rc4_ctr_we;
   
   reg [1 : 0] rc4_ctrl_reg;
   reg [1 : 0] rc4_ctrl_new;
@@ -97,7 +101,15 @@ module rc4(
   reg kmem_init;
   reg [5 : 0] kmem_addr;
   reg [7 : 0] kmem_data;
+
+  reg init_state;
+  reg update_state;
+  reg update_regs;
+  reg ksa;
   
+  reg [7 : 0] tmp_keystream_data;
+  reg skip_data;
+
   
   //----------------------------------------------------------------
   // Module instantiantions.
@@ -139,6 +151,7 @@ module rc4(
   // Concurrent connectivity for ports etc.
   //----------------------------------------------------------------
   assign keystream_valid = keystream_valid_reg;
+  assign keystream_data = tmp_keystream_data;
   
   
   //----------------------------------------------------------------
@@ -152,13 +165,23 @@ module rc4(
       if (!reset_n)
         begin
           ip_reg       <= 8'h00;
-          id_reg       <= 8'h00;
           jp_reg       <= 8'h00;
-          jd_reg       <= 8'h00;
+          rc4_ctr_reg  <= 10'h000;
           rc4_ctrl_reg <= CTRL_IDLE;
         end
       else
         begin
+          if (update_regs)
+            begin
+              ip_reg <= ip_new;
+              jp_reg <= jp_new;
+            end
+
+          if (rc4_ctr_we)
+            begin
+              rc4_ctr_reg <= rc4_ctr_reg;
+            end
+          
           if (rc4_ctrl_we)
             begin
               rc4_ctrl_reg <= rc4_ctrl_new;
@@ -168,26 +191,107 @@ module rc4(
 
 
   //----------------------------------------------------------------
+  // output_logic
+  //
+  // Simple mux that sets the output to zero if we are skipping
+  // keystream data.
+  //----------------------------------------------------------------
+  always @*
+    begin : output_logic
+      if (skip_data)
+        begin
+          tmp_keystream_data = 8'h00;
+        end
+      else
+        begin
+          tmp_keystram_data = kmem_data;
+        end
+    end
+  
+  
+  //----------------------------------------------------------------
   // rc4_logic
+  //
+  // The main RC4 logic with updates of pointers ip and jp, key
+  // based state init etc.
   //----------------------------------------------------------------
   alway @*
     begin : rc4_logic
-      ip_new = ip_reg + 1'h01;
-      jp_new = jp_reg + idata;
-      kp_new = ipdata + jdata;
+      ip_new = 0;
+      jp_new = 0;
+      update_regs = 0;
+
+      if (init_state)
+        begin
+          ip_new      = 0;
+          jp_new      = 0;
+          update_regs = 1;
+        end
+      
+      if (state_update)
+        begin
+          update_regs = 1;
+          ip_new = ip_reg + 1'h01;
+
+          if (ksa)
+            begin
+              jp_new = jp_reg + idata + kmem_data;
+            end
+          else
+            begin
+              jp_new = jp_reg + idata;
+            end
+
+          kp_new = ipdata + jdata;
+        end
     end // rc4_logic
   
+
+  //----------------------------------------------------------------
+  // rc4_ctr_logic
+  //
+  // The logic for the counter used for initialization as well
+  // as keystream skipping.
+  //----------------------------------------------------------------
+  always @*
+    begin : rc4_ctr_logic
+      rc4_ctr_new = 0;
+      rc4_ctr_we  = 0;
+
+      if (rc4_ctr_rst)
+        begin
+          rc4_ctr_new = 0;
+          rc4_ctr_we  = 1;
+        end
+
+      if (rc4_ctr_inc)
+        begin
+          rc4_ctr_new = rc4_ctr_reg + 1'b1;
+          rc4_ctr_we  = 1;
+        end
+    end
+
   
   //----------------------------------------------------------------
   // rc4_ctrl_fsm
+  //
   // Logic for the state machine controlling the core behaviour.
   //----------------------------------------------------------------
   always @*
     begin : rc4_ctrl_fsm
+      kmem_init = 0;
       smem_init = 0;
       smem_swap = 0;
 
-      kmem_init = 0;
+      init_state   = 0;
+      update_state = 0;
+      update_regs  = 0;
+      ksa          = 0;
+
+      rc4_ctr_rst = 0;
+      rc4_ctr_inc = 0;
+
+      skip_data = 0;
       
       rc4_ctrl_new  = CTRL_IDLE;
       rc4_ctrl_we   = 0;
@@ -198,7 +302,7 @@ module rc4(
           end
       endcase // case (rc4_ctrl_reg)
     end // rc4_ctrl_fsm
-    
+
 endmodule // rc4
 
 //======================================================================
