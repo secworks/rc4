@@ -58,7 +58,12 @@ module rc4(
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
-  
+  parameter RFC4345_SKIP = 1536;
+
+  parameter CTRL_IDLE = 0;
+  parameter CTRL_INIT = 1;
+  parameter CTRL_NEXT = 2;
+
   
   //----------------------------------------------------------------
   // Registers including update variables and write enable.
@@ -299,6 +304,25 @@ module rc4(
       case (rc4_ctrl_reg)
         CTRL_IDLE:
           begin
+            if (init)
+              begin
+                kmem_init    = 1;
+                smem_inir    = 1;
+                init_state   = 1;
+                rc4_ctr_rst  = 1;
+                rc4_ctrl_new = CTRL_IDLE;
+                rc4_ctrl_we  = 1;
+              end
+          end
+
+        CTRL_INIT:
+          begin
+
+          end
+
+        CTRL_NEXT:
+          begin
+
           end
       endcase // case (rc4_ctrl_reg)
     end // rc4_ctrl_fsm
