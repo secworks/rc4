@@ -42,8 +42,8 @@ module rc4_key_mem(
                      
                    input wire          init,
 
-                   input wire  [5 : 0] key_addr,
-                   input wire  [7 : 0] key_data,
+                   input wire  [5 : 0] key_write_addr,
+                   input wire  [7 : 0] key_write_data,
                    input wire          key_write,
                    input wire          key_size,
                      
@@ -62,13 +62,13 @@ module rc4_key_mem(
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
-  reg [7 : 0] tmp_key_data;
+  reg [7 : 0] tmp_key_read_data;
   
 
   //----------------------------------------------------------------
   // Concurrent connectivity for ports etc.
   //----------------------------------------------------------------
-  assign key_data = tmp_key_data;
+  assign key_read_data = tmp_key_read_data;
 
   
   //----------------------------------------------------------------
@@ -88,8 +88,8 @@ module rc4_key_mem(
         begin
           if (init)
             begin
-              key_reg <= key;
-              size = key_size;
+              key_reg <= key_write_data;
+              size    <= key_size;
             end
         end
     end // reg_update
@@ -108,172 +108,172 @@ module rc4_key_mem(
       
       if (size)
         begin
-          addr = key_addr;
+          addr = key_write_addr;
         end
       else
         begin
-          addr = {1'b0, key_addr[6 : 0]};
+          addr = {1'b0, key_write_addr[6 : 0]};
         end
 
       case (addr)
         6'h00:
           begin
-            tmp_key_data = key_reg[255 : 248];
+            tmp_key_read_data = key_reg[255 : 248];
           end
 
         6'h01:
           begin
-            tmp_key_data = key_reg[247 : 240];
+            tmp_key_read_data = key_reg[247 : 240];
           end
 
         6'h02:
           begin
-            tmp_key_data = key_reg[239 : 232];
+            tmp_key_read_data = key_reg[239 : 232];
           end
 
         6'h03:
           begin
-            tmp_key_data = key_reg[231 : 224];
+            tmp_key_read_data = key_reg[231 : 224];
           end
 
         6'h04:
           begin
-            tmp_key_data = key_reg[223 : 216];
+            tmp_key_read_data = key_reg[223 : 216];
           end
 
         6'h05:
           begin
-            tmp_key_data = key_reg[215 : 208];
+            tmp_key_read_data = key_reg[215 : 208];
           end
 
         6'h06:
           begin
-            tmp_key_data = key_reg[207 : 200];
+            tmp_key_read_data = key_reg[207 : 200];
           end
 
         6'h07:
           begin
-            tmp_key_data = key_reg[199 : 192];
+            tmp_key_read_data = key_reg[199 : 192];
           end
 
         6'h08:
           begin
-            tmp_key_data = key_reg[191 : 184];
+            tmp_key_read_data = key_reg[191 : 184];
           end
 
         6'h09:
           begin
-            tmp_key_data = key_reg[183 : 176];
+            tmp_key_read_data = key_reg[183 : 176];
           end
 
         6'h0a:
           begin
-            tmp_key_data = key_reg[175 : 168];
+            tmp_key_read_data = key_reg[175 : 168];
           end
 
         6'h0b:
           begin
-            tmp_key_data = key_reg[167 : 160];
+            tmp_key_read_data = key_reg[167 : 160];
           end
 
         6'h0c:
           begin
-            tmp_key_data = key_reg[159 : 152];
+            tmp_key_read_data = key_reg[159 : 152];
           end
 
         6'h0d:
           begin
-            tmp_key_data = key_reg[151 : 144];
+            tmp_key_read_data = key_reg[151 : 144];
           end
 
         6'h0e:
           begin
-            tmp_key_data = key_reg[143 : 136];
+            tmp_key_read_data = key_reg[143 : 136];
           end
 
         6'h0f:
           begin
-            tmp_key_data = key_reg[135 : 128];
+            tmp_key_read_data = key_reg[135 : 128];
           end
 
         6'h10:
           begin
-            tmp_key_data = key_reg[127 : 120];
+            tmp_key_read_data = key_reg[127 : 120];
           end
 
         6'h11:
           begin
-            tmp_key_data = key_reg[119 : 112];
+            tmp_key_read_data = key_reg[119 : 112];
           end
 
         6'h12:
           begin
-            tmp_key_data = key_reg[111 : 104];
+            tmp_key_read_data = key_reg[111 : 104];
           end
 
         6'h13:
           begin
-            tmp_key_data = key_reg[103 : 096];
+            tmp_key_read_data = key_reg[103 : 096];
           end
 
         6'h14:
           begin
-            tmp_key_data = key_reg[095 : 088];
+            tmp_key_read_data = key_reg[095 : 088];
           end
 
         6'h15:
           begin
-            tmp_key_data = key_reg[087 : 080];
+            tmp_key_read_data = key_reg[087 : 080];
           end
 
         6'h16:
           begin
-            tmp_key_data = key_reg[079 : 072];
+            tmp_key_read_data = key_reg[079 : 072];
           end
 
         6'h17:
           begin
-            tmp_key_data = key_reg[071 : 064];
+            tmp_key_read_data = key_reg[071 : 064];
           end
 
         6'h18:
           begin
-            tmp_key_data = key_reg[063 : 056];
+            tmp_key_read_data = key_reg[063 : 056];
           end
 
         6'h19:
           begin
-            tmp_key_data = key_reg[055 : 048];
+            tmp_key_read_data = key_reg[055 : 048];
           end
 
         6'h1a:
           begin
-            tmp_key_data = key_reg[047 : 040];
+            tmp_key_read_data = key_reg[047 : 040];
           end
 
         6'h1b:
           begin
-            tmp_key_data = key_reg[039 : 032];
+            tmp_key_read_data = key_reg[039 : 032];
           end
 
         6'h1c:
           begin
-            tmp_key_data = key_reg[031 : 024];
+            tmp_key_read_data = key_reg[031 : 024];
           end
 
         6'h1d:
           begin
-            tmp_key_data = key_reg[023 : 016];
+            tmp_key_read_data = key_reg[023 : 016];
           end
 
         6'h1e:
           begin
-            tmp_key_data = key_reg[015 : 008];
+            tmp_key_read_data = key_reg[015 : 008];
           end
 
         6'h1f:
           begin
-            tmp_key_data = key_reg[007 : 000];
+            tmp_key_read_data = key_reg[007 : 000];
           end
       endcase // case (addr)
     end // read_key_data
