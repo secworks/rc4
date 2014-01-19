@@ -62,7 +62,7 @@ module rc4_key_mem(
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
-  reg [7 : 0] ]tmp_key_data;
+  reg [7 : 0] tmp_key_data;
   
 
   //----------------------------------------------------------------
@@ -116,162 +116,162 @@ module rc4_key_mem(
         end
 
       case (addr)
-        0x00:
+        6'h00:
           begin
             tmp_key_data = key_reg[255 : 248];
           end
 
-        0x01:
+        6'h01:
           begin
             tmp_key_data = key_reg[247 : 240];
           end
 
-        0x02:
+        6'h02:
           begin
             tmp_key_data = key_reg[239 : 232];
           end
 
-        0x03:
+        6'h03:
           begin
             tmp_key_data = key_reg[231 : 224];
           end
 
-        0x04:
+        6'h04:
           begin
             tmp_key_data = key_reg[223 : 216];
           end
 
-        0x05:
+        6'h05:
           begin
             tmp_key_data = key_reg[215 : 208];
           end
 
-        0x06:
+        6'h06:
           begin
             tmp_key_data = key_reg[207 : 200];
           end
 
-        0x07:
+        6'h07:
           begin
             tmp_key_data = key_reg[199 : 192];
           end
 
-        0x08:
+        6'h08:
           begin
             tmp_key_data = key_reg[191 : 184];
           end
 
-        0x09:
+        6'h09:
           begin
             tmp_key_data = key_reg[183 : 176];
           end
 
-        0x0a:
+        6'h0a:
           begin
             tmp_key_data = key_reg[175 : 168];
           end
 
-        0x0b:
+        6'h0b:
           begin
             tmp_key_data = key_reg[167 : 160];
           end
 
-        0x0c:
+        6'h0c:
           begin
             tmp_key_data = key_reg[159 : 152];
           end
 
-        0x0d:
+        6'h0d:
           begin
             tmp_key_data = key_reg[151 : 144];
           end
 
-        0x0e:
+        6'h0e:
           begin
             tmp_key_data = key_reg[143 : 136];
           end
 
-        0x0f:
+        6'h0f:
           begin
             tmp_key_data = key_reg[135 : 128];
           end
 
-        0x10:
+        6'h10:
           begin
             tmp_key_data = key_reg[127 : 120];
           end
 
-        0x11:
+        6'h11:
           begin
             tmp_key_data = key_reg[119 : 112];
           end
 
-        0x12:
+        6'h12:
           begin
             tmp_key_data = key_reg[111 : 104];
           end
 
-        0x13:
+        6'h13:
           begin
             tmp_key_data = key_reg[103 : 096];
           end
 
-        0x14:
+        6'h14:
           begin
             tmp_key_data = key_reg[095 : 088];
           end
 
-        0x15:
+        6'h15:
           begin
             tmp_key_data = key_reg[087 : 080];
           end
 
-        0x16:
+        6'h16:
           begin
             tmp_key_data = key_reg[079 : 072];
           end
 
-        0x17:
+        6'h17:
           begin
             tmp_key_data = key_reg[071 : 064];
           end
 
-        0x18:
+        6'h18:
           begin
             tmp_key_data = key_reg[063 : 056];
           end
 
-        0x19:
+        6'h19:
           begin
             tmp_key_data = key_reg[055 : 048];
           end
 
-        0x1a:
+        6'h1a:
           begin
             tmp_key_data = key_reg[047 : 040];
           end
 
-        0x1b:
+        6'h1b:
           begin
             tmp_key_data = key_reg[039 : 032];
           end
 
-        0x1c:
+        6'h1c:
           begin
             tmp_key_data = key_reg[031 : 024];
           end
 
-        0x1d:
+        6'h1d:
           begin
             tmp_key_data = key_reg[023 : 016];
           end
 
-        0x1e:
+        6'h1e:
           begin
             tmp_key_data = key_reg[015 : 008];
           end
 
-        0x1f:
+        6'h1f:
           begin
             tmp_key_data = key_reg[007 : 000];
           end
