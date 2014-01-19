@@ -2648,13 +2648,14 @@ module rc4_state_mem(
   //----------------------------------------------------------------
   always @*
     begin : swap_bytes
-      s0x00 = 8'h00;
+      s0x00_new = 8'h00;
+      s0x00_we = 0;
       
       if (swap)
         begin
           // First write operation.
           case (i_read_addr)
-            0x00:
+            8'h00:
               begin
                 s0x00_new = j_read_data;
                 s0x00_we  = 1;
@@ -2664,7 +2665,7 @@ module rc4_state_mem(
           if (j_read_addr != i_read_addr)
             begin
               case (j_read_addr)
-                0x00:
+                8'h00:
                   begin
                     s0x00_new = i_read_data;
                     s0x00_we  = 1;
