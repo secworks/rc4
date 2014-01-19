@@ -56,6 +56,9 @@ module rc4_key_mem(
   // Registers including update variables and write enable.
   //----------------------------------------------------------------
   reg [255 : 0] key_reg;
+  reg [255 : 0] key_new;
+  reg           key_we;
+
   reg           size;
 
   
@@ -86,15 +89,45 @@ module rc4_key_mem(
         end
       else
         begin
+          if (key_we)
+            begin
+              key_reg <= key_new;
+            end
+
           if (init)
             begin
-              key_reg <= key_write_data;
-              size    <= key_size;
+              size <= key_size;
             end
         end
     end // reg_update
 
 
+  //----------------------------------------------------------------
+  // write_key_data
+  //
+  // Write the given byte into the key register.
+  //----------------------------------------------------------------
+  always @*
+    begin : write_key_data
+      key_new = 256'h0000000000000000000000000000000000000000000000000000000000000000;
+      key_we  = 0;
+
+      if (key_write)
+        begin
+          case (key_write_addr)
+            6'h00:
+              begin
+                key_new = {key_write_data, 248'h00000000000000000000000000000000000000000000000000000000000000};
+              end
+            default:
+              begin
+
+              end
+          endcase // case (key_write_addr)
+        end
+    end
+
+  
   //----------------------------------------------------------------
   // read_key_data
   //
