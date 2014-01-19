@@ -220,7 +220,7 @@ module rc4(
   // The main RC4 logic with updates of pointers ip and jp, key
   // based state init etc.
   //----------------------------------------------------------------
-  alway @*
+  always @*
     begin : rc4_logic
       ip_new = 0;
       jp_new = 0;
@@ -236,7 +236,7 @@ module rc4(
       if (state_update)
         begin
           update_regs = 1;
-          ip_new = ip_reg + 1'h01;
+          ip_new = ip_reg + 1'b1;
 
           if (ksa)
             begin
