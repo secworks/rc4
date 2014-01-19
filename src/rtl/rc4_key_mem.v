@@ -84,7 +84,7 @@ module rc4_key_mem(
     begin : reg_update
       if (!reset_n)
         begin
-          key_reg <= 256'h0000000000000000000000000000000000000000000000000000000000000000;
+          key_reg <= {8{8'h00}};
           size <= 0;
         end
       else
@@ -109,7 +109,7 @@ module rc4_key_mem(
   //----------------------------------------------------------------
   always @*
     begin : write_key_data
-      key_new = 256'h0000000000000000000000000000000000000000000000000000000000000000;
+      key_new = {8{8'h00}};
       key_we  = 0;
 
       if (key_write)
@@ -117,7 +117,7 @@ module rc4_key_mem(
           case (key_write_addr)
             6'h00:
               begin
-                key_new = {key_write_data, 248'h00000000000000000000000000000000000000000000000000000000000000};
+                key_new = {key_write_data, {8{8'h00}}};
               end
             default:
               begin
