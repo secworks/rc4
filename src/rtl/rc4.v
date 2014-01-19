@@ -45,8 +45,8 @@ module rc4(
            input wire          next,
            input wire          rfc4345_mode,
            
+           input wire [5 : 0]  key_addr,
            input wire [7 : 0]  key_data,
-           input wire [7 : 0]  key_addr,
            input wire          key_write,
            input wire          key_size,
            
@@ -94,18 +94,18 @@ module rc4(
   //----------------------------------------------------------------
   reg [7 : 0] key_byte;
   
-  reg [7 : 0] idata;
-  reg [7 : 0] jdata;
+  wire [7 : 0] idata;
+  wire [7 : 0] jdata;
 
   reg [7 : 0] kp_new;
-  reg [7 : 0] kdata;
+  wire [7 : 0] kdata;
 
   reg smem_swap;
   reg smem_init;
 
   reg kmem_init;
-  reg [5 : 0] kmem_addr;
-  reg [7 : 0] kmem_data;
+  wire [5 : 0] kmem_addr;
+  wire [7 : 0] kmem_data;
 
   reg init_state;
   reg update_state;
@@ -148,7 +148,7 @@ module rc4(
                    .key_size(key_size),
                    
                    .key_read_addr(kmem_addr),
-                   .key_read_datak(kmem_data)
+                   .key_read_data(kmem_data)
                   );
 
   
@@ -209,7 +209,7 @@ module rc4(
         end
       else
         begin
-          tmp_keystram_data = kmem_data;
+          tmp_keystream_data = kmem_data;
         end
     end
   
@@ -233,7 +233,7 @@ module rc4(
           update_regs = 1;
         end
       
-      if (state_update)
+      if (update_state)
         begin
           update_regs = 1;
           ip_new = ip_reg + 1'b1;
@@ -247,7 +247,7 @@ module rc4(
               jp_new = jp_reg + idata;
             end
 
-          kp_new = ipdata + jdata;
+          kp_new = idata + jdata;
         end
     end // rc4_logic
   
@@ -307,7 +307,7 @@ module rc4(
             if (init)
               begin
                 kmem_init    = 1;
-                smem_inir    = 1;
+                smem_init    = 1;
                 init_state   = 1;
                 rc4_ctr_rst  = 1;
                 rc4_ctrl_new = CTRL_IDLE;
