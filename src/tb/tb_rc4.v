@@ -146,10 +146,18 @@ module tb_rc4();
     begin
       cycle_ctr = 32'h00000000;
       error_ctr = 32'h00000000;
-      tc_ctr = 32'h00000000;
+      tc_ctr    = 32'h00000000;
       
-      tb_clk = 0;
+      tb_clk     = 0;
       tb_reset_n = 0;
+
+      tb_init         = 0;
+      tb_next         = 0;
+      tb_rfc4345_mode = 0;
+      tb_key_addr     = 0;
+      tb_key_data     = 0;
+      tb_key_write    = 0;
+      tb_key_size     = 0;
     end
   endtask // init_dut
 
