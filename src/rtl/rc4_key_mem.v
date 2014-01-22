@@ -547,7 +547,7 @@ module rc4_key_mem(
   //----------------------------------------------------------------
   always @*
     begin : read_key_data
-      reg [7 : 0] addr;
+      reg [5 : 0] addr;
       
       if (size)
         begin
@@ -555,7 +555,7 @@ module rc4_key_mem(
         end
       else
         begin
-          addr = {1'b0, key_write_addr[6 : 0]};
+          addr = {1'b0, key_write_addr[4 : 0]};
         end
 
       case (addr)
@@ -719,6 +719,11 @@ module rc4_key_mem(
             tmp_key_read_data = key1f_reg;
           end
 
+        default:
+          begin
+            tmp_key_read_data = 0;
+          end
+        
       endcase // case (addr)
     end // read_key_data
 
