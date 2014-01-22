@@ -290,7 +290,6 @@ module rc4(
 
       init_state   = 0;
       update_state = 0;
-      update_regs  = 0;
       ksa          = 0;
 
       rc4_ctr_rst = 0;
