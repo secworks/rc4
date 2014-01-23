@@ -93,19 +93,15 @@ module rc4(
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
-  reg [7 : 0] key_byte;
-  
   wire [7 : 0] idata;
   wire [7 : 0] jdata;
-
-  reg [7 : 0] kp_new;
   wire [7 : 0] kdata;
+  reg [7 : 0] kp_new;
 
   reg smem_swap;
   reg smem_init;
 
   reg kmem_init;
-  wire [4 : 0] kmem_addr;
   wire [7 : 0] kmem_data;
 
   reg init_state;
@@ -137,6 +133,7 @@ module rc4(
                      .k_read_data(kdata)
                     );
   
+
   rc4_key_mem kmem(
                    .clk(clk),
                    .reset_n(reset_n),
@@ -148,7 +145,7 @@ module rc4(
                    .key_write(key_write),
                    .key_size(key_size),
                    
-                   .key_read_addr(kmem_addr),
+                   .key_read_addr(ip_reg[4 : 0]),
                    .key_read_data(kmem_data)
                   );
 
@@ -221,7 +218,7 @@ module rc4(
         end
       else
         begin
-          tmp_keystream_data = kmem_data;
+          tmp_keystream_data = kdata;
           keystream_valid_new = 1;
           keystream_valid_we  = 1;
         end
@@ -236,20 +233,22 @@ module rc4(
   //----------------------------------------------------------------
   always @*
     begin : rc4_logic
-      ip_new = 0;
-      jp_new = 0;
-      kp_new = 0;
+      ip_new      = 0;
+      jp_new      = 0;
+      kp_new      = 0;
+      smem_swap   = 0;
       update_regs = 0;
 
       if (init_state)
         begin
-          ip_new      = 0;
-          jp_new      = 0;
+          ip_new      = 8'h00;
+          jp_new      = 8'h00;
           update_regs = 1;
         end
       
       if (update_state)
         begin
+          smem_swap   = 1;
           update_regs = 1;
           ip_new = ip_reg + 1'b1;
 
@@ -301,7 +300,6 @@ module rc4(
     begin : rc4_ctrl_fsm
       kmem_init     = 0;
       smem_init     = 0;
-      smem_swap     = 0;
 
       init_state    = 0;
       update_state  = 0;
@@ -333,7 +331,6 @@ module rc4(
           begin
             ksa          = 1;
             rc4_ctr_inc  = 1;
-            smem_swap    = 1;
             update_state = 1;
             if (rc4_ctr_reg == 256)
               begin
@@ -356,7 +353,6 @@ module rc4(
         CTRL_SKIP:
           begin
             rc4_ctr_inc  = 1;
-            smem_swap    = 1;
             update_state = 1;
             if (rc4_ctr_reg == RFC4345_SKIP_BYTES)
               begin
@@ -370,7 +366,6 @@ module rc4(
             skip_data = 0;
             if (next)
               begin
-                smem_swap    = 1;
                 update_state = 1;
               end
             else
