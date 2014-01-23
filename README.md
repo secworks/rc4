@@ -11,8 +11,18 @@ enough to be usable.
 
 
 ## Functionality ##
-The core implements the RFC4345 ciphers arcfour128 and arcfour modes as
-well as a flexible key size from 8 to 256 bits.
+The core implements the RFC4345 ciphers arcfour128 including keystream
+byte skipping of the first 1536 bytes. Currently the only key sizes
+supported are 128 and 256 bits.
+
+
+## Implementation notes ##
+The synthesis, mapping tool might not be able to map the key and state
+memories to memory blocks in the target technology, but instead end up
+using separate registers. The reason for this is a combination of many
+ports and asynchronous reads. The many ports can be handled by memory
+mirroring, but the asynchronous read ports are needed to achieve the one
+cycle/byte performance.
 
 
 ## Implementation results ##
