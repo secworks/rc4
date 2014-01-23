@@ -45,7 +45,7 @@ module rc4(
            input wire          next,
            input wire          rfc4345_mode,
            
-           input wire [5 : 0]  key_addr,
+           input wire [4 : 0]  key_addr,
            input wire [7 : 0]  key_data,
            input wire          key_write,
            input wire          key_size,
@@ -104,7 +104,7 @@ module rc4(
   reg smem_init;
 
   reg kmem_init;
-  wire [5 : 0] kmem_addr;
+  wire [4 : 0] kmem_addr;
   wire [7 : 0] kmem_data;
 
   reg init_state;

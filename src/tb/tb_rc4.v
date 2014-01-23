@@ -62,7 +62,7 @@ module tb_rc4();
   reg          tb_init;
   reg          tb_next;
   reg          tb_rfc4345_mode;
-  reg [5 : 0]  tb_key_addr;
+  reg [4 : 0]  tb_key_addr;
   reg [7 : 0]  tb_key_data;
   reg          tb_key_write;
   reg          tb_key_size;
