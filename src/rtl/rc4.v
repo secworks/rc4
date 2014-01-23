@@ -284,18 +284,18 @@ module rc4(
   //----------------------------------------------------------------
   always @*
     begin : rc4_ctrl_fsm
-      kmem_init = 0;
-      smem_init = 0;
-      smem_swap = 0;
+      kmem_init     = 0;
+      smem_init     = 0;
+      smem_swap     = 0;
 
-      init_state   = 0;
-      update_state = 0;
-      ksa          = 0;
+      init_state    = 0;
+      update_state  = 0;
+      ksa           = 0;
 
-      rc4_ctr_rst = 0;
-      rc4_ctr_inc = 0;
+      rc4_ctr_rst   = 0;
+      rc4_ctr_inc   = 0;
 
-      skip_data = 0;
+      skip_data     = 0;
       
       rc4_ctrl_new  = CTRL_IDLE;
       rc4_ctrl_we   = 0;
@@ -309,19 +309,36 @@ module rc4(
                 smem_init    = 1;
                 init_state   = 1;
                 rc4_ctr_rst  = 1;
-                rc4_ctrl_new = CTRL_IDLE;
+                rc4_ctrl_new = CTRL_INIT;
                 rc4_ctrl_we  = 1;
               end
           end
 
         CTRL_INIT:
           begin
-
+            ksa          = 1;
+            rc4_ctr_inc  = 1;
+            smem_swap    = 1;
+            update_state = 1;
+            if (rc4_ctr_reg == 256)
+              begin
+                init_state   = 1;
+                rc4_ctrl_new = CTRL_NEXT;
+                rc4_ctrl_we  = 1;
+              end
           end
 
         CTRL_NEXT:
           begin
-
+            if (next)
+              begin
+                update_state = 1;
+              end
+            else
+              begin
+                rc4_ctrl_new = CTRL_IDLE;
+                rc4_ctrl_we  = 1;
+              end
           end
       endcase // case (rc4_ctrl_reg)
     end // rc4_ctrl_fsm
