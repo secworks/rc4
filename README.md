@@ -13,10 +13,18 @@ well as a flexible key size from 8 to 256 bits.
 
 
 ## Implementation results ##
-Too early for that.
+**Altera Cyclone IV GX**
+ - LEs: 8190
+ - Registers: 2236
+ - 57 MHz clock
+ - 258 cycles initialization latency.
+ - 1 keystream byte/cycle during generation.
 
 
 ## Status ##
+**(2014-01-23):** First complete implementation. Still not debugged.
+
+
 **(2014-01-17):** Most parts of the functionality is done. The key size
 has been limited to 128 and 256 bits for the first version. The RTL is
 still not complete and no testbench is available.
