@@ -347,8 +347,8 @@ module rc4_state_mem(
         begin
           if (swap)
             begin
-              state_mem[i_read_addr] = tmp_j_data;
-              state_mem[j_read_addr] = tmp_i_data;
+              state_mem[i_read_addr] <= tmp_j_data;
+              state_mem[j_read_addr] <= tmp_i_data;
             end
         end
     end // reg_update
