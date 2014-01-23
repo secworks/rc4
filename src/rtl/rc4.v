@@ -58,11 +58,12 @@ module rc4(
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
-  parameter RFC4345_SKIP = 1536;
+  parameter RFC4345_SKIP_BYTES = 1536;
 
   parameter CTRL_IDLE = 0;
   parameter CTRL_INIT = 1;
-  parameter CTRL_NEXT = 2;
+  parameter CTRL_SKIP = 2;
+  parameter CTRL_NEXT = 3;
 
   
   //----------------------------------------------------------------
@@ -203,13 +204,20 @@ module rc4(
   //----------------------------------------------------------------
   always @*
     begin : output_logic
+      keystream_valid_new = 0;
+      keystream_valid_we = 0;
+      
       if (skip_data)
         begin
-          tmp_keystream_data = 8'h00;
+          tmp_keystream_data  = 8'h00;
+          keystream_valid_new = 0;
+          keystream_valid_we  = 1;
         end
       else
         begin
           tmp_keystream_data = kmem_data;
+          keystream_valid_new = 1;
+          keystream_valid_we  = 1;
         end
     end
   
@@ -295,7 +303,7 @@ module rc4(
       rc4_ctr_rst   = 0;
       rc4_ctr_inc   = 0;
 
-      skip_data     = 0;
+      skip_data     = 1;
       
       rc4_ctrl_new  = CTRL_IDLE;
       rc4_ctrl_we   = 0;
@@ -323,15 +331,40 @@ module rc4(
             if (rc4_ctr_reg == 256)
               begin
                 init_state   = 1;
+
+                if (rfc4345_mode)
+                  begin
+                    rc4_ctr_rst  = 1;
+                    rc4_ctrl_new = CTRL_SKIP;
+                    rc4_ctrl_we  = 1;
+                  end
+                else
+                  begin
+                    rc4_ctrl_new = CTRL_NEXT;
+                    rc4_ctrl_we  = 1;
+                  end
+              end
+          end
+
+        CTRL_SKIP:
+          begin
+            rc4_ctr_inc  = 1;
+            smem_swap    = 1;
+            update_state = 1;
+            if (rc4_ctr_reg == RFC4345_SKIP_BYTES)
+              begin
                 rc4_ctrl_new = CTRL_NEXT;
                 rc4_ctrl_we  = 1;
               end
           end
-
+          
+        
         CTRL_NEXT:
           begin
+            skip_data = 0;
             if (next)
               begin
+                smem_swap    = 1;
                 update_state = 1;
               end
             else
