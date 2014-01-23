@@ -170,10 +170,11 @@ module rc4(
     begin : reg_update
       if (!reset_n)
         begin
-          ip_reg       <= 8'h00;
-          jp_reg       <= 8'h00;
-          rc4_ctr_reg  <= 10'h000;
-          rc4_ctrl_reg <= CTRL_IDLE;
+          ip_reg              <= 8'h00;
+          jp_reg              <= 8'h00;
+          rc4_ctr_reg         <= 10'h000;
+          keystream_valid_reg <= 0;
+          rc4_ctrl_reg        <= CTRL_IDLE;
         end
       else
         begin
@@ -185,7 +186,12 @@ module rc4(
 
           if (rc4_ctr_we)
             begin
-              rc4_ctr_reg <= rc4_ctr_reg;
+              rc4_ctr_reg <= rc4_ctr_new;
+            end
+
+          if (keystream_valid_we)
+            begin
+              keystream_valid_reg <= keystream_valid_new;
             end
           
           if (rc4_ctrl_we)
@@ -232,6 +238,7 @@ module rc4(
     begin : rc4_logic
       ip_new = 0;
       jp_new = 0;
+      kp_new = 0;
       update_regs = 0;
 
       if (init_state)
@@ -357,7 +364,6 @@ module rc4(
                 rc4_ctrl_we  = 1;
               end
           end
-          
         
         CTRL_NEXT:
           begin
