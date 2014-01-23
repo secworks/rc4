@@ -3,7 +3,8 @@
 // rc4_state_mem.v
 // ---------------
 // Verilog 2001 implementation of the state memory for the RC4 
-// stream cipher. The smem handles state byte swap internally.
+// stream cipher. The state memory handles byte swap internally.
+// The memory supports one cycle init operation.
 //
 //
 // Copyright (c) 2013 Secworks Sweden AB
@@ -355,12 +356,34 @@ module rc4_state_mem(
 
 
   //----------------------------------------------------------------
-  // read_mem
+  // i_read_mem
+  //
+  // Read data for port i.
   //----------------------------------------------------------------
   always @*
-    begin : read_mem
+    begin : i_read_mem
       tmp_i_data = state_mem[i_read_addr];
+    end
+
+
+  //----------------------------------------------------------------
+  // j_read_mem
+  //
+  // Read data for port j.
+  //----------------------------------------------------------------
+  always @*
+    begin : j_read_mem
       tmp_j_data = state_mem[j_read_addr];
+    end
+
+
+  //----------------------------------------------------------------
+  // k_read_mem
+  //
+  // Read data for port k.
+  //----------------------------------------------------------------
+  always @*
+    begin : k_read_mem
       tmp_k_data = state_mem[k_read_addr];
     end
   
