@@ -119,6 +119,16 @@ module tb_rc4();
   //----------------------------------------------------------------
   task dump_dut_state();
     begin
+      $display("State of DUT");
+      $display("------------");
+      $display("ip = 0x%02x, id = 0x%02x", dut.ip_reg, dut.idata);
+      $display("jp = 0x%02x, jd = 0x%02x", dut.jp_reg, dut.jdata);
+      $display("kp = 0x%02x, kd = 0x%02x", dut.kp_new, dut.kdata);
+      $display("");
+      
+      $display("rc4_ctr  = 0x%03x", dut.rc4_ctr_reg);
+      $display("rc4_ctrl = 0x%02x", dut.rc4_ctrl_reg);
+      $display("");
     end
   endtask // dump_dut_state
   
@@ -210,6 +220,13 @@ module tb_rc4();
       $display("   -- Testbench for rc4 started --");
 
       init_sim();
+
+      dump_dut_state();
+      reset_dut();
+
+      dump_dut_state();
+      reset_dut();
+      
       display_test_result();
       $display("*** Simulation done. ***");
       $finish;
