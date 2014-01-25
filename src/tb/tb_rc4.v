@@ -68,7 +68,7 @@ module tb_rc4();
   reg          tb_key_size;
   wire [7 : 0] tb_keystream_data;
   wire         tb_keystream_valid;
-  
+
   
   //----------------------------------------------------------------
   // Device Under Test.
@@ -109,6 +109,12 @@ module tb_rc4();
     begin : sys_monitor
       #(2 * CLK_HALF_PERIOD);
       cycle_ctr = cycle_ctr + 1;
+
+      if (DEBUG)
+        begin
+          dump_dut_state();
+          
+        end
     end
 
   
@@ -132,6 +138,26 @@ module tb_rc4();
     end
   endtask // dump_dut_state
   
+
+  //----------------------------------------------------------------
+  // dump_key_mem()
+  //
+  // Dump the state of key mem.
+  //----------------------------------------------------------------
+  task dump_key_mem();
+    reg [6 : 0] i;
+    begin
+      $display("State of Key memory");
+      $display("-------------------");
+
+      for (i = 0 ; i < 64 ; i = i + 1)
+        begin
+          $display("key_mem[0x%02x] = 0x%02x", i, dut.kmem.key_mem[i[5 : 0]]);
+        end
+      $display("");
+    end
+  endtask // dump_key_mem
+    
   
   //----------------------------------------------------------------
   // reset_dut()
@@ -227,6 +253,8 @@ module tb_rc4();
       dump_dut_state();
       reset_dut();
 
+      dump_key_mem();
+      
       tb_init = 1;
       #(2 * CLK_HALF_PERIOD);
       tb_init = 0;
