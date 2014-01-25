@@ -226,6 +226,13 @@ module tb_rc4();
 
       dump_dut_state();
       reset_dut();
+
+      tb_init = 1;
+      #(2 * CLK_HALF_PERIOD);
+      tb_init = 0;
+      #(10 * CLK_HALF_PERIOD);
+      dump_dut_state();
+      
       
       display_test_result();
       $display("*** Simulation done. ***");
