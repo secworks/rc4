@@ -157,6 +157,27 @@ module tb_rc4();
       $display("");
     end
   endtask // dump_key_mem
+  
+
+  //----------------------------------------------------------------
+  // dump_state_mem()
+  //
+  // Dump the state mem.
+  //----------------------------------------------------------------
+  task dump_state_mem();
+    reg [8 : 0] i;
+    begin
+      $display("State memory");
+      $display("------------");
+
+      for (i = 0 ; i < 256 ; i = i + 1)
+        begin
+          $display("state_mem[0x%02x] = 0x%02x", i[7 : 0], 
+                   dut.smem.state_mem[i[7 : 0]]);
+        end
+      $display("");
+    end
+  endtask // dump_state_mem
     
   
   //----------------------------------------------------------------
@@ -254,13 +275,14 @@ module tb_rc4();
       reset_dut();
 
       dump_key_mem();
+      dump_state_mem();
       
       tb_init = 1;
       #(2 * CLK_HALF_PERIOD);
       tb_init = 0;
       #(10 * CLK_HALF_PERIOD);
       dump_dut_state();
-      
+      dump_state_mem();
       
       display_test_result();
       $display("*** Simulation done. ***");
