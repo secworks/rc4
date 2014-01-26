@@ -157,8 +157,8 @@ module tb_rc4();
       $display("");
     end
   endtask // dump_key_mem
-  
 
+  
   //----------------------------------------------------------------
   // dump_state_mem()
   //
@@ -255,6 +255,25 @@ module tb_rc4();
       //   end
     end
   endtask // wait_ready
+
+
+  //----------------------------------------------------------------
+  // write_key_data()
+  //
+  // Write the given data byte to the given address in the 
+  // key memory in the DUT.
+  //----------------------------------------------------------------
+  task write_key_data(input [7 : 0] addr,
+                      input [7 : 0] data);
+    begin
+      tb_key_addr     = addr;
+      tb_key_data     = data;
+      tb_key_write    = 1;
+      #(2 * CLK_HALF_PERIOD);
+      tb_key_write    = 0;
+    end
+  endtask // write_key_data
+  
                          
     
   //----------------------------------------------------------------
