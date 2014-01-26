@@ -275,6 +275,24 @@ module tb_rc4();
   endtask // write_key_data
   
                          
+  //----------------------------------------------------------------
+  // write_unit_key()
+  // 
+  // Write key 0x0102030405...20 to the key memory.
+  //----------------------------------------------------------------
+  task write_unit_key();
+    reg [5 : 0] i;
+    begin
+      $display("*** Writing unit key to dut key memory.");
+      $display("");
+      
+      for (i = 1 ; i < 32 ; i = i + 1)
+        begin
+          write_key_data((i - 1), i);
+        end
+    end
+  endtask // write_unit_key
+     
     
   //----------------------------------------------------------------
   // rc4_test
@@ -295,11 +313,15 @@ module tb_rc4();
 
       dump_key_mem();
       dump_state_mem();
+
+      write_unit_key();
+      dump_key_mem();
       
       tb_init = 1;
+      tb_next = 1;
       #(2 * CLK_HALF_PERIOD);
       tb_init = 0;
-      #(10 * CLK_HALF_PERIOD);
+      #(1000 * CLK_HALF_PERIOD);
       dump_dut_state();
       dump_state_mem();
       
