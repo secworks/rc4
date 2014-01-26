@@ -150,9 +150,9 @@ module tb_rc4();
       $display("State of Key memory");
       $display("-------------------");
 
-      for (i = 0 ; i < 64 ; i = i + 1)
+      for (i = 0 ; i < 32 ; i = i + 1)
         begin
-          $display("key_mem[0x%02x] = 0x%02x", i, dut.kmem.key_mem[i[5 : 0]]);
+          $display("key_mem[0x%02x] = 0x%02x", i, dut.kmem.key_mem[i[4 : 0]]);
         end
       $display("");
     end
