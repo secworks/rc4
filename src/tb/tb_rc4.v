@@ -239,20 +239,24 @@ module tb_rc4();
   
 
   //----------------------------------------------------------------
-  // wait_ready()
+  // wait_valid()
   //
-  // Wait for the ready flag in the dut to be set.
+  // Wait for the valid flag in the dut to be set.
   //
   // Note: It is the callers responsibility to call the function
   // when the dut is actively processing and will in fact at some
   // point set the flag.
   //----------------------------------------------------------------
-  task wait_ready();
+  task wait_valid();
     begin
-      // while (!tb_ready)
-      //   begin
-      //     #(2 * CLK_HALF_PERIOD);
-      //   end
+      while (!tb_keystream_valid)
+        begin
+          #(2 * CLK_HALF_PERIOD);
+        end
+      if (DEBUG)
+        begin
+          $display("*** valid seen.");
+        end
     end
   endtask // wait_ready
 
@@ -321,7 +325,8 @@ module tb_rc4();
       tb_next = 1;
       #(2 * CLK_HALF_PERIOD);
       tb_init = 0;
-      #(1000 * CLK_HALF_PERIOD);
+      #(100 * CLK_HALF_PERIOD);
+      wait_valid();
       dump_dut_state();
       dump_state_mem();
       
