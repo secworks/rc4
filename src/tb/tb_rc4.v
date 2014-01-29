@@ -327,6 +327,7 @@ module tb_rc4();
       tb_init = 0;
       #(100 * CLK_HALF_PERIOD);
       wait_valid();
+      
       dump_dut_state();
       dump_state_mem();
       
