@@ -58,7 +58,7 @@ module rc4(
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
-  parameter RFC4345_SKIP_BYTES = 1536;
+  parameter RFC4345_SKIP_BYTES = 11'h54c;
 
   parameter CTRL_IDLE = 0;
   parameter CTRL_INIT = 1;
@@ -79,11 +79,11 @@ module rc4(
   reg keystream_valid_new;
   reg keystream_valid_we;
 
-  reg [9 : 0] rc4_ctr_reg;
-  reg [9 : 0] rc4_ctr_new;
-  reg         rc4_ctr_rst;
-  reg         rc4_ctr_inc;
-  reg         rc4_ctr_we;
+  reg [10 : 0] rc4_ctr_reg;
+  reg [10 : 0] rc4_ctr_new;
+  reg          rc4_ctr_rst;
+  reg          rc4_ctr_inc;
+  reg          rc4_ctr_we;
 
   reg [1 : 0] rc4_ctrl_reg;
   reg [1 : 0] rc4_ctrl_new;
@@ -169,7 +169,7 @@ module rc4(
         begin
           ip_reg              <= 8'h00;
           jp_reg              <= 8'h00;
-          rc4_ctr_reg         <= 10'h000;
+          rc4_ctr_reg         <= 11'h000;
           keystream_valid_reg <= 0;
           rc4_ctrl_reg        <= CTRL_IDLE;
         end
@@ -274,12 +274,12 @@ module rc4(
   //----------------------------------------------------------------
   always @*
     begin : rc4_ctr_logic
-      rc4_ctr_new = 0;
+      rc4_ctr_new = 11'h000;
       rc4_ctr_we  = 0;
 
       if (rc4_ctr_rst)
         begin
-          rc4_ctr_new = 0;
+          rc4_ctr_new = 11'h000;
           rc4_ctr_we  = 1;
         end
 
