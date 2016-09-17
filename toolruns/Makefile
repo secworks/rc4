@@ -13,12 +13,14 @@ RC4_SRC=../src/rtl/rc4.v ../src/rtl/rc4_key_mem.v ../src/rtl/rc4_state_mem.v
 RC4_TB_SRC=../src/tb/tb_rc4.v
 
 CC=iverilog
+LINT=verilator
+LINTFLAGS =  --lint-only  -Wall -Wno-fatal -Wno-DECLFILENAME
 
 
-all: top
+all: rc4.sim
 
 
-top: $(RC4_TB_SRC) $(RC4_SRC)
+rc4.sim: $(RC4_TB_SRC) $(RC4_SRC)
 	$(CC) -o rc4.sim $(RC4_TB_SRC) $(RC4_SRC)
 
 
@@ -28,6 +30,10 @@ sim-rc4: rc4.sim
 
 debug:
 	@echo "No debug available."
+
+
+lint:   $(RC4_SRC)
+	$(LINT) $(LINTFLAGS) $(RC4_SRC)
 
 
 clean:
@@ -45,4 +51,3 @@ help:
 #===================================================================
 # EOF Makefile
 #===================================================================
-
