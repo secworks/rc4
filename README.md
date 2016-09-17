@@ -9,7 +9,8 @@ usable. The answer after implementation the design in a FPGA device is
 that, yes it does work. The reusulting implementation achieves a clock
 frequency high enough to be usable. The design however is rather large.
 
-Also, nobody should be using RC4. So don't use this core, ok?
+Also, RC4 is a very, very broken cipher. Nobody should be using RC4. So
+don't use this core, ok?
 
 
 ## Functionality ##
