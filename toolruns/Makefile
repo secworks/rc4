@@ -36,43 +36,41 @@
 #
 #===================================================================
 
-RC4_SRC=../src/rtl/rc4.v ../src/rtl/rc4_key_mem.v ../src/rtl/rc4_state_mem.v
-RC4_TB_SRC=../src/tb/tb_rc4.v
+TOP_SRC = ../src/rtl/rc4.v ../src/rtl/rc4_key_mem.v ../src/rtl/rc4_state_mem.v
+TOP_TB_SRC = ../src/tb/tb_rc4.v
 
 CC=iverilog
+CC_FLAGS= -Wall
+
 LINT=verilator
-LINTFLAGS =  --lint-only  -Wall -Wno-fatal -Wno-DECLFILENAME
+LINT_FLAGS = +1364-2001ext+ --lint-only -Wall -Wno-fatal -Wno-DECLFILENAME
 
 
-all: rc4.sim
+all: top.sim
 
 
-rc4.sim: $(RC4_TB_SRC) $(RC4_SRC)
-	$(CC) -o rc4.sim $(RC4_TB_SRC) $(RC4_SRC)
+top.sim: $(TOP_TB_SRC) $(TOP_SRC)
+	$(CC) $(CC_FLAGS) -o top.sim $(TOP_TB_SRC) $(TOP_SRC)
 
 
-sim-rc4: rc4.sim
-	./rc4.sim
+sim-top: top.sim
+	./top.sim
 
 
-debug:
-	@echo "No debug available."
-
-
-lint:   $(RC4_SRC)
-	$(LINT) $(LINTFLAGS) $(RC4_SRC)
+lint:   $(TIO_SRC)
+	$(LINT) $(LINT_FLAGS) $(TOP_SRC)
 
 
 clean:
-	rm -f rc4.sim
+	rm -f *.sim
 
 
 help:
 	@echo "Supported targets:"
 	@echo "------------------"
 	@echo "top:      Build top level simulation target."
-	@echo "sim-rc4:  Run rc4 top level simulation."
-	@echo "debug:    Print the internal varibles."
+	@echo "lint:     Run linter on source."
+	@echo "sim-top:  Run rc4 top level simulation."
 	@echo "clean:    Delete all built files."
 
 #===================================================================
