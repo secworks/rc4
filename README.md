@@ -29,6 +29,53 @@ handled by memory mirroring, but the asynchronous read ports are needed
 to achieve the one cycle/byte performance.
 
 
+## FuseSoC
+This core is supported by the
+[FuseSoC](https://github.com/olofk/fusesoc) core package manager and
+build system. Some quick  FuseSoC instructions:
+
+install FuseSoC
+~~~
+pip install fusesoc
+~~~
+
+Create and enter a new workspace
+~~~
+mkdir workspace && cd workspace
+~~~
+
+Register rc4 as a library in the workspace
+~~~
+fusesoc library add rc4 /path/to/rc4
+~~~
+
+...if repo is available locally or...
+...to get the upstream repo
+~~~
+fusesoc library add rc4 https://github.com/secworks/rc4
+~~~
+
+To run lint
+~~~
+fusesoc run --target=lint secworks:crypto:rc4
+~~~
+
+Run tb_rc testbench
+~~~
+fusesoc run --target=tb_rc4 secworks:crypto:rc4
+~~~
+
+Run with modelsim instead of default tool (icarus)
+~~~
+fusesoc run --target=tb_rc4 --tool=modelsim secworks:crypto:rc4
+~~~
+
+List all targets
+~~~
+fusesoc core show secworks:crypto:rc4
+~~~
+
+
 ## Implementation results ##
 **Altera Cyclone IV GX**
  - LEs: 8190
