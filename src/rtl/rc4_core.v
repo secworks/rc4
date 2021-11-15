@@ -65,9 +65,10 @@ module rc4_core(
   // Registers including update variables and write enable.
   //----------------------------------------------------------------
   reg [7 : 0]  state [0 : 255];
-  reg [7 : 0]  state_new;
-  reg [7 : 0]  state_ptr;
-  reg          state_we;
+  reg [7 : 0]  state_inew;
+  reg [7 : 0]  state_jnew;
+  reg          state_iwe;
+  reg          state_jwe;
 
   reg [7 : 0]  ip_reg;
   reg [7 : 0]  ip_new;
@@ -85,14 +86,17 @@ module rc4_core(
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
-  reg init_state;
-  reg update_state;
+  reg         reset_ptrs;
+  reg         init_state;
+  reg         update_state;
+
+  reg [7 : 0] tmp_keystream;
 
 
   //----------------------------------------------------------------
   // Concurrent connectivity for ports etc.
   //----------------------------------------------------------------
-  assign keystream = 8'haa;
+  assign keystream = tmp_keystream;
 
 
   //----------------------------------------------------------------
@@ -123,8 +127,11 @@ module rc4_core(
           if (jp_we)
             jp_reg <= jp_new;
 
-          if (state_we)
-            state[state_ptr] <= state_new;
+          if (state_iwe)
+            state[ip_reg] <= state_inew;
+
+          if (state_jwe)
+            state[jp_reg] <= state_jnew;
 
           if (rc4_ctrl_we)
             rc4_ctrl_reg <= rc4_ctrl_new;
@@ -140,26 +147,51 @@ module rc4_core(
       reg [7 : 0] id;
       reg [7 : 0] jd;
       reg [7 : 0] kp;
-      reg [7 : 0] kp;
+      reg [7 : 0] kd;
 
-      state_new = 8'h0;
-      state_ptr = 8'h0;
-      state_we  = 1'h0;
+      state_inew = 8'h0;
+      state_jnew = 8'h0;
+      state_iwe  = 1'h0;
+      state_jwe  = 1'h0;
+      ip_we      = 1'h0;
+      jp_we      = 1'h0;
 
-      ip_new    = 8'h0;
-      ip_we     = 1'h0;
+
+      ip_new = ip_reg + 1'h1;
+      id     = state[ip_new];
+
+      jp_new = jp_reg + id;
+      jd     = state[jp_new];
+
+      kp            = id + jd;
+      tmp_keystream = state[kp];
+
+
+      if (reset_ptrs) begin
+        ip_new = ip_reg + 1'h1;
+        ip_we  = 1'h1;
+
+        jp_new = jp_reg + 1'h1;
+        jp_we  = 1'h1;
+      end
 
 
       if (init_state) begin
-        state_new = ip_reg;
-        state_ptr = ip_reg;
-        state_we  = 1'h1;
-        ip_new    = ip_reg + 1'h1;
-        ip_we     = 1'h1;
+        state_inew = ip_reg;
+        state_iwe  = 1'h1;
+        ip_we      = 1'h1;
       end
 
-      if (update_state) begin
 
+      if (update_state) begin
+        state_inew = jd;
+        state_iwe  = 1'h1;
+
+        state_jnew = id;
+        state_jwe  = 1'h1;
+
+        ip_we      = 1'h0;
+        jp_we      = 1'h0;
       end
     end
 
@@ -171,7 +203,7 @@ module rc4_core(
   always @*
     begin : rc4_ctrl
       init_state = 1'h0;
-
+      reset_ptrs = 1'h0;
     end
 
 endmodule // rc4_core
