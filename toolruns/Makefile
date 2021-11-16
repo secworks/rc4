@@ -2,11 +2,12 @@
 #
 # Makefile
 # --------
-# Makefile for building the rc4 core and top simulation.
+# Makefile for linting source code as well as building and running
+# rc4 core and top simulations.
 #
 #
 # Author: Joachim Strombergson
-# Copyright (c) 2013, Secworks Sweden AB
+# Copyright (c) 2013, 2021, Secworks Sweden AB
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or
@@ -36,8 +37,8 @@
 #
 #===================================================================
 
-TOP_SRC = ../src/rtl/rc4.v ../src/rtl/rc4_key_mem.v ../src/rtl/rc4_state_mem.v
-TOP_TB_SRC = ../src/tb/tb_rc4.v
+CORE_SRC = ../src/rtl/rc4_core.v
+CORE_TB_SRC = ../src/tb/tb_rc4_core.v
 
 CC=iverilog
 CC_FLAGS= -Wall
@@ -46,19 +47,19 @@ LINT=verilator
 LINT_FLAGS = +1364-2001ext+ --lint-only -Wall -Wno-fatal -Wno-DECLFILENAME
 
 
-all: top.sim
+all: core
 
 
-top.sim: $(TOP_TB_SRC) $(TOP_SRC)
-	$(CC) $(CC_FLAGS) -o top.sim $(TOP_TB_SRC) $(TOP_SRC)
+core:	$(CORE_TB_SRC) $(CORE_SRC)
+	$(CC) $(CC_FLAGS) -o core.sim $^
 
 
-sim-top: top.sim
-	./top.sim
+sim-core: core.sim
+	./core.sim
 
 
-lint:   $(TIO_SRC)
-	$(LINT) $(LINT_FLAGS) $(TOP_SRC)
+lint:   $(CORE_SRC)
+	$(LINT) $(LINT_FLAGS) $^
 
 
 clean:
@@ -68,10 +69,11 @@ clean:
 help:
 	@echo "Supported targets:"
 	@echo "------------------"
-	@echo "top:      Build top level simulation target."
+	@echo "core:     Build core level simulation target."
 	@echo "lint:     Run linter on source."
-	@echo "sim-top:  Run rc4 top level simulation."
+	@echo "sim-top:  Run core level simulation."
 	@echo "clean:    Delete all built files."
+
 
 #===================================================================
 # EOF Makefile
