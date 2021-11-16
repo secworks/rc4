@@ -92,9 +92,9 @@ module rc4_core(
   reg          ready_new;
   reg          ready_we;
 
-  reg [2 : 0]  rc4_ctrl_reg;
-  reg [2 : 0]  rc4_ctrl_new;
-  reg          rc4_ctrl_we;
+  reg [2 : 0]  rc4_core_ctrl_reg;
+  reg [2 : 0]  rc4_core_ctrl_new;
+  reg          rc4_core_ctrl_we;
 
 
   //----------------------------------------------------------------
@@ -125,10 +125,10 @@ module rc4_core(
           state[i] <= 8'h0;
         end
 
-        ip_reg       <= 8'h0;
-        jp_reg       <= 8'h0;
-        ready_reg    <= 1'h0;
-        rc4_ctrl_reg <= CTRL_IDLE;
+        ip_reg            <= 8'h0;
+        jp_reg            <= 8'h0;
+        ready_reg         <= 1'h0;
+        rc4_core_ctrl_reg <= CTRL_IDLE;
       end
 
       else begin
@@ -147,8 +147,8 @@ module rc4_core(
         if (ready_we)
           ready_reg <= ready_new;
 
-        if (rc4_ctrl_we)
-          rc4_ctrl_reg <= rc4_ctrl_new;
+        if (rc4_core_ctrl_we)
+          rc4_core_ctrl_reg <= rc4_core_ctrl_new;
       end
     end // reg_update
 
@@ -243,47 +243,47 @@ module rc4_core(
   //----------------------------------------------------------------
   always @*
     begin : rc4_ctrl
-      init_state   = 1'h0;
-      update_state = 1'h0;
-      ready_new    = 1'h0;
-      ready_we     = 1'h0;
-      ip_rst       = 1'h0;
-      ip_nxt       = 1'h0;
-      jp_rst       = 1'h0;
-      jp_nxt       = 1'h0;
-      ksa_mode     = 1'h0;
-      init_state   = 1'h0;
-      update_state = 1'h0;
-      kdata_en     = 1'h0;
-      rc4_ctrl_new = CTRL_IDLE;
-      rc4_ctrl_we  = 1'h0;
+      init_state        = 1'h0;
+      update_state      = 1'h0;
+      ready_new         = 1'h0;
+      ready_we          = 1'h0;
+      ip_rst            = 1'h0;
+      ip_nxt            = 1'h0;
+      jp_rst            = 1'h0;
+      jp_nxt            = 1'h0;
+      ksa_mode          = 1'h0;
+      init_state        = 1'h0;
+      update_state      = 1'h0;
+      kdata_en          = 1'h0;
+      rc4_core_ctrl_new = CTRL_IDLE;
+      rc4_core_ctrl_we  = 1'h0;
 
-      case (rc4_ctrl_reg)
+      case (rc4_core_ctrl_reg)
         CTRL_IDLE : begin
           if (init) begin
-            ip_rst       = 1'h1;
-            jp_rst       = 1'h1;
-            init_state   = 1'h1;
-            ready_new    = 1'h0;
-            ready_we     = 1'h1;
-            rc4_ctrl_new = CTRL_INIT0;
-            rc4_ctrl_we  = 1'h1;
+            ip_rst            = 1'h1;
+            jp_rst            = 1'h1;
+            init_state        = 1'h1;
+            ready_new         = 1'h0;
+            ready_we          = 1'h1;
+            rc4_core_ctrl_new = CTRL_INIT0;
+            rc4_core_ctrl_we  = 1'h1;
           end
 
           if (next) begin
-            ready_new    = 1'h1;
-            ready_we     = 1'h1;
-            rc4_ctrl_new = CTRL_NEXT;
-            rc4_ctrl_we  = 1'h1;
+            ready_new         = 1'h1;
+            ready_we          = 1'h1;
+            rc4_core_ctrl_new = CTRL_NEXT;
+            rc4_core_ctrl_we  = 1'h1;
           end
         end
 
 
         CTRL_INIT0 : begin
-          init_state = 1'h1;
-          ip_nxt     = 1'h1;
-          rc4_ctrl_new = CTRL_INIT;
-          rc4_ctrl_we  = 1'h1;
+          init_state        = 1'h1;
+          ip_nxt            = 1'h1;
+          rc4_core_ctrl_new = CTRL_INIT;
+          rc4_core_ctrl_we  = 1'h1;
         end
 
 
@@ -292,21 +292,21 @@ module rc4_core(
           ip_nxt     = 1'h1;
 
           if (ip_reg == 8'h00) begin
-            ip_nxt       = 1'h0;
-            ip_rst       = 1'h1;
-            rc4_ctrl_new = CTRL_KSA0;
-            rc4_ctrl_we  = 1'h1;
+            ip_nxt            = 1'h0;
+            ip_rst            = 1'h1;
+            rc4_core_ctrl_new = CTRL_KSA0;
+            rc4_core_ctrl_we  = 1'h1;
           end
         end
 
 
         CTRL_KSA0 : begin
-          ip_nxt       = 1'h1;
-          jp_nxt       = 1'h1;
-          ksa_mode     = 1'h1;
-          update_state = 1'h1;
-          rc4_ctrl_new = CTRL_KSA;
-          rc4_ctrl_we  = 1'h1;
+          ip_nxt            = 1'h1;
+          jp_nxt            = 1'h1;
+          ksa_mode          = 1'h1;
+          update_state      = 1'h1;
+          rc4_core_ctrl_new = CTRL_KSA;
+          rc4_core_ctrl_we  = 1'h1;
         end
 
 
@@ -317,10 +317,10 @@ module rc4_core(
           update_state = 1'h1;
 
           if (ip_reg == 8'h0) begin
-            ready_new    = 1'h1;
-            ready_we     = 1'h1;
-            rc4_ctrl_new = CTRL_IDLE;
-            rc4_ctrl_we  = 1'h1;
+            ready_new         = 1'h1;
+            ready_we          = 1'h1;
+            rc4_core_ctrl_new = CTRL_IDLE;
+            rc4_core_ctrl_we  = 1'h1;
           end
         end
 
@@ -332,17 +332,17 @@ module rc4_core(
           kdata_en     = 1'h1;
 
           if (!next) begin
-            ready_new    = 1'h0;
-            ready_we     = 1'h1;
-            rc4_ctrl_new = CTRL_IDLE;
-            rc4_ctrl_we  = 1'h1;
+            ready_new         = 1'h0;
+            ready_we          = 1'h1;
+            rc4_core_ctrl_new = CTRL_IDLE;
+            rc4_core_ctrl_we  = 1'h1;
           end
         end
 
 
         default : begin
         end
-      endcase // case (rc4_ctrl_reg)
+      endcase // case (rc4_core_ctrl_reg)
     end
 
 endmodule // rc4_core

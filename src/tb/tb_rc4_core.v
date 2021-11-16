@@ -136,7 +136,7 @@ module tb_rc4_core();
                dut.ip_reg, dut.ip_new, dut.ip_we, dut.ip_rst, dut.ip_nxt);
       $display("jp_reg: 0x%02x, jp_new: 0x%02x, jp_we: 0x%1x, jp_rst: 0x%1x, jp_nxt: 0x%1x",
                dut.jp_reg, dut.jp_new, dut.jp_we, dut.jp_rst, dut.jp_nxt);
-      $display("rc4_ctrl_reg: 0x%02x", dut.rc4_ctrl_reg);
+      $display("rc4_core_ctrl_reg: 0x%02x", dut.rc4_core_ctrl_reg);
       $display("");
     end
   endtask // dump_dut_state
