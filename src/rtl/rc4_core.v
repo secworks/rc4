@@ -269,6 +269,8 @@ module rc4_core(
           end
 
           if (next) begin
+            ready_new    = 1'h1;
+            ready_we     = 1'h1;
             rc4_ctrl_new = CTRL_NEXT;
             rc4_ctrl_we  = 1'h1;
           end
@@ -302,11 +304,19 @@ module rc4_core(
 
 
         CTRL_NEXT : begin
-          ready_new    = 1'h1;
-          ready_we     = 1'h1;
-          rc4_ctrl_new = CTRL_IDLE;
-          rc4_ctrl_we  = 1'h1;
+          ip_nxt       = 1'h1;
+          jp_nxt       = 1'h1;
+          update_state = 1'h1;
+          kdata_en     = 1'h1;
+
+          if (!next) begin
+            ready_new    = 1'h0;
+            ready_we     = 1'h1;
+            rc4_ctrl_new = CTRL_IDLE;
+            rc4_ctrl_we  = 1'h1;
+          end
         end
+
 
         default : begin
         end
