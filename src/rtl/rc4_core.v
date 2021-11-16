@@ -2,7 +2,8 @@
 //
 // rc4_core.v
 // ----------
-// Simple on-file implemenatation of the rc4 stream cipher.
+// Simple one-file implemenatation of the rc4 stream cipher.
+// This implementation supports 128 or 256 bit keys.
 //
 //
 // Author: Joachim Strombergson
@@ -39,57 +40,66 @@
 `default_nettype none
 
 module rc4_core(
-                input wire           clk,
-                input wire           reset_n,
+                input wire            clk,
+                input wire            reset_n,
 
-                input wire           init,
-                input wire           next,
+                input wire            init,
+                input wire            next,
 
                 input wire  [255 : 0] key,
-                input wire  [4   : 0] keylen,
+                input wire            keylen,
 
-                output wire [7   : 0] keystream
+                output wire [7   : 0] keystream,
+                output wire           ready
                );
 
 
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
-  localparam CTRL_IDLE = 3'h0;
-  localparam CTRL_INIT = 3'h1;
-  localparam CTRL_NEXT = 3'h2;
-
+  localparam CTRL_IDLE = 2'h0;
+  localparam CTRL_INIT = 2'h1;
+  localparam CTRL_NEXT = 2'h2;
 
 
   //----------------------------------------------------------------
   // Registers including update variables and write enable.
   //----------------------------------------------------------------
   reg [7 : 0]  state [0 : 255];
+  reg [7 : 0]  state_iaddr;
   reg [7 : 0]  state_inew;
-  reg [7 : 0]  state_jnew;
   reg          state_iwe;
+  reg [7 : 0]  state_jaddr;
+  reg [7 : 0]  state_jnew;
   reg          state_jwe;
 
   reg [7 : 0]  ip_reg;
   reg [7 : 0]  ip_new;
+  reg          ip_rst;
+  reg          ip_nxt;
   reg          ip_we;
 
   reg [7 : 0]  jp_reg;
   reg [7 : 0]  jp_new;
+  reg          jp_rst;
+  reg          jp_nxt;
   reg          jp_we;
 
-  reg [2 : 0]  rc4_ctrl_reg;
-  reg [2 : 0]  rc4_ctrl_new;
+  reg          ready_reg;
+  reg          ready_new;
+  reg          ready_we;
+
+  reg [1 : 0]  rc4_ctrl_reg;
+  reg [1 : 0]  rc4_ctrl_new;
   reg          rc4_ctrl_we;
 
 
   //----------------------------------------------------------------
   // Wires.
   //----------------------------------------------------------------
-  reg         reset_ptrs;
   reg         init_state;
   reg         update_state;
-
+  reg         ksa_mode;
   reg [7 : 0] tmp_keystream;
 
 
@@ -97,14 +107,11 @@ module rc4_core(
   // Concurrent connectivity for ports etc.
   //----------------------------------------------------------------
   assign keystream = tmp_keystream;
+  assign ready     = ready_reg;
 
 
   //----------------------------------------------------------------
-  // reg_update
-  //
-  // Update functionality for all registers in the core.
-  // All registers are positive edge triggered, and with
-  // synchronous active low reset.
+  // reg_update.
   //----------------------------------------------------------------
   always @ (posedge clk)
     begin: reg_update
@@ -117,6 +124,7 @@ module rc4_core(
 
           ip_reg       <= 8'h0;
           jp_reg       <= 8'h0;
+          ready_reg    <= 1'h0;
           rc4_ctrl_reg <= CTRL_IDLE;
         end
       else
@@ -128,10 +136,13 @@ module rc4_core(
             jp_reg <= jp_new;
 
           if (state_iwe)
-            state[ip_reg] <= state_inew;
+            state[state_iaddr] <= state_inew;
 
           if (state_jwe)
-            state[jp_reg] <= state_jnew;
+            state[state_jaddr] <= state_jnew;
+
+          if (ready_we)
+            ready_reg <= ready_new;
 
           if (rc4_ctrl_we)
             rc4_ctrl_reg <= rc4_ctrl_new;
@@ -144,66 +155,135 @@ module rc4_core(
   //----------------------------------------------------------------
   always @*
     begin : rc4_logic
-      reg [7 : 0] id;
-      reg [7 : 0] jd;
+      reg [7 : 0] istate;
+      reg [7 : 0] jstate;
+      reg [4 : 0] key_addr;
       reg [7 : 0] kp;
-      reg [7 : 0] kd;
 
-      state_inew = 8'h0;
-      state_jnew = 8'h0;
-      state_iwe  = 1'h0;
-      state_jwe  = 1'h0;
-      ip_we      = 1'h0;
-      jp_we      = 1'h0;
-
-
-      ip_new = ip_reg + 1'h1;
-      id     = state[ip_new];
-
-      jp_new = jp_reg + id;
-      jd     = state[jp_new];
-
-      kp            = id + jd;
-      tmp_keystream = state[kp];
+      ip_new        = 8'h0;
+      ip_we         = 1'h0;
+      jp_new        = 8'h0;
+      jp_we         = 1'h0;
+      tmp_keystream = 8'h0;
+      state_iwe     = 1'h0;
+      state_inew    = 8'h0;
+      state_iaddr   = 8'h0;
+      state_jwe     = 1'h0;
+      state_jnew    = 8'h0;
+      state_jaddr   = 8'h0;
 
 
-      if (reset_ptrs) begin
+      if (keylen) begin
+        key_addr = ip_reg[4 : 0];
+      end
+      else begin
+        key_addr = {1'h0, ip_reg[3 : 0]};
+      end
+      key_byte = key[key_addr * 8 +: 8];
+
+
+      if (ip_rst) begin
+        ip_new = 8'h0;
+        ip_we  = 1'h1;
+      end
+
+      if (ip_nxt) begin
         ip_new = ip_reg + 1'h1;
         ip_we  = 1'h1;
+      end
 
-        jp_new = jp_reg + 1'h1;
+      istate = state[ip_new];
+
+
+      if (jp_rst) begin
+        jp_new = 8'h0;
         jp_we  = 1'h1;
       end
 
-
-      if (init_state) begin
-        state_inew = ip_reg;
-        state_iwe  = 1'h1;
-        ip_we      = 1'h1;
+      if (jp_nxt) begin
+        jp_we  = 1'h1;
+        if (ksa_mode) begin
+          jp_new = jp_reg + istate + key_byte;
+        end
+        else begin
+          jp_new = jp_reg + istate;
+        end
       end
+
+      jstate = state[jp_new];
 
 
       if (update_state) begin
-        state_inew = jd;
-        state_iwe  = 1'h1;
+        if (init_state) begin
+          istate_new  = ip_reg;
+          istate_addr = ip_reg;
+          istate_we   = 1'h1;
+        end
+        else begin
+          // Swap bytes in state.
+          istate_new  = jstate;
+          istate_addr = ip_new;
+          istate_we   = 1'h1;
 
-        state_jnew = id;
-        state_jwe  = 1'h1;
-
-        ip_we      = 1'h0;
-        jp_we      = 1'h0;
+          jstate_new  = istate;
+          jstate_addr = jp_new;
+          jstate_we   = 1'h1;
+        end
       end
+
+      kp            = istate + jstate;
+      tmp_keystream = state[kp];
     end
 
 
   //----------------------------------------------------------------
-  // rc4_ctrl
-  // FSM logic that controls the r4 functionality.
+  // rc4_ctrl.
   //----------------------------------------------------------------
   always @*
     begin : rc4_ctrl
-      init_state = 1'h0;
-      reset_ptrs = 1'h0;
+      init_state   = 1'h0;
+      update_state = 1'h0;
+      reset_ptrs   = 1'h0;
+      ready_new    = 1'h0;
+      ready_we     = 1'h0;
+      ip_rst       = 1'h0;
+      ip_nxt       = 1'h0;
+      jp_rst       = 1'h0;
+      jp_nxt       = 1'h0;
+      ksa_mode     = 1'h0;
+      init_state   = 1'h0;
+      update_state = 1'h0;
+      rc4_ctrl_new = CTRL_IDLE;
+      rc4_ctrl_we  = 1'h0;
+
+      case (rc4_ctrl_reg)
+        CTRL_IDLE : begin
+          if (init) begin
+            ready_new    = 1'h0;
+            ready_we     = 1'h1;
+            reset_ptrs   = 1'h1;
+            rc4_ctrl_new = CTRL_INIT;
+            rc4_ctrl_we  = 1'h1;
+          end
+
+          else if (next) begin
+            rc4_ctrl_new = CTRL_NEXT;
+            rc4_ctrl_we  = 1'h1;
+          end
+        end
+
+
+        CTRL_INIT : begin
+        end
+
+
+        CTRL_NEXT : begin
+        end
+
+
+        default : begin
+        end
+      endcase // case (rc4_ctrl_reg)
     end
 
 endmodule // rc4_core
