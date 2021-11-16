@@ -281,7 +281,7 @@ module rc4_core(
           init_state = 1'h1;
           ip_nxt     = 1'h1;
 
-          if (ip_new == 8'h0) begin
+          if (ip_reg == 8'h0) begin
             rc4_ctrl_new = CTRL_KSA;
             rc4_ctrl_we  = 1'h1;
           end
@@ -294,7 +294,7 @@ module rc4_core(
           ksa_mode     = 1'h1;
           update_state = 1'h1;
 
-          if (ip_new == 8'h0) begin
+          if (ip_reg == 8'h0) begin
             ready_new    = 1'h1;
             ready_we     = 1'h1;
             rc4_ctrl_new = CTRL_IDLE;
