@@ -59,7 +59,8 @@ module rc4_core(
   //----------------------------------------------------------------
   localparam CTRL_IDLE = 2'h0;
   localparam CTRL_INIT = 2'h1;
-  localparam CTRL_NEXT = 2'h2;
+  localparam CTRL_KSA  = 2'h2;
+  localparam CTRL_NEXT = 2'h3;
 
 
   //----------------------------------------------------------------
@@ -100,13 +101,13 @@ module rc4_core(
   reg         init_state;
   reg         update_state;
   reg         ksa_mode;
-  reg [7 : 0] tmp_keystream;
-
+  reg [7 : 0] kdata;
+  reg         kdata_en;
 
   //----------------------------------------------------------------
   // Concurrent connectivity for ports etc.
   //----------------------------------------------------------------
-  assign keystream = tmp_keystream;
+  assign keystream = kdata;
   assign ready     = ready_reg;
 
 
@@ -117,60 +118,61 @@ module rc4_core(
     begin: reg_update
       integer i;
 
-      if (!reset_n)
-        begin
-          for (i = 0 ; i < 256 ; i = i + 1)
-            state[i] <= 8'h0;
-
-          ip_reg       <= 8'h0;
-          jp_reg       <= 8'h0;
-          ready_reg    <= 1'h0;
-          rc4_ctrl_reg <= CTRL_IDLE;
+      if (!reset_n) begin
+        for (i = 0 ; i < 64 ; i = i + 1) begin
+          state[i] <= 8'h0;
         end
-      else
-        begin
-          if (ip_we)
-            ip_reg <= ip_new;
 
-          if (jp_we)
-            jp_reg <= jp_new;
+        ip_reg       <= 8'h0;
+        jp_reg       <= 8'h0;
+        ready_reg    <= 1'h0;
+        rc4_ctrl_reg <= CTRL_IDLE;
+      end
 
-          if (state_iwe)
-            state[state_iaddr] <= state_inew;
+      else begin
+        if (ip_we)
+          ip_reg <= ip_new;
 
-          if (state_jwe)
-            state[state_jaddr] <= state_jnew;
+        if (jp_we)
+          jp_reg <= jp_new;
 
-          if (ready_we)
-            ready_reg <= ready_new;
+        if (state_iwe)
+          state[state_iaddr] <= state_inew;
 
-          if (rc4_ctrl_we)
-            rc4_ctrl_reg <= rc4_ctrl_new;
-        end
+        if (state_jwe)
+          state[state_jaddr] <= state_jnew;
+
+        if (ready_we)
+          ready_reg <= ready_new;
+
+        if (rc4_ctrl_we)
+          rc4_ctrl_reg <= rc4_ctrl_new;
+      end
     end // reg_update
 
 
   //----------------------------------------------------------------
-  // rc4_logic.
+  // rc4_core_logic.
   //----------------------------------------------------------------
   always @*
-    begin : rc4_logic
+    begin : rc4_core_logic
       reg [7 : 0] istate;
       reg [7 : 0] jstate;
       reg [4 : 0] key_addr;
+      reg [7 : 0] key_byte;
       reg [7 : 0] kp;
 
-      ip_new        = 8'h0;
-      ip_we         = 1'h0;
-      jp_new        = 8'h0;
-      jp_we         = 1'h0;
-      tmp_keystream = 8'h0;
-      state_iwe     = 1'h0;
-      state_inew    = 8'h0;
-      state_iaddr   = 8'h0;
-      state_jwe     = 1'h0;
-      state_jnew    = 8'h0;
-      state_jaddr   = 8'h0;
+      ip_new      = 8'h0;
+      ip_we       = 1'h0;
+      jp_new      = 8'h0;
+      jp_we       = 1'h0;
+      state_iwe   = 1'h0;
+      state_inew  = 8'h0;
+      state_iaddr = 8'h0;
+      state_jwe   = 1'h0;
+      state_jnew  = 8'h0;
+      state_jaddr = 8'h0;
+      kdata       = 8'h0;
 
 
       if (keylen) begin
@@ -191,7 +193,6 @@ module rc4_core(
         ip_new = ip_reg + 1'h1;
         ip_we  = 1'h1;
       end
-
       istate = state[ip_new];
 
 
@@ -209,30 +210,29 @@ module rc4_core(
           jp_new = jp_reg + istate;
         end
       end
-
       jstate = state[jp_new];
 
 
-      if (update_state) begin
-        if (init_state) begin
-          istate_new  = ip_reg;
-          istate_addr = ip_reg;
-          istate_we   = 1'h1;
-        end
-        else begin
-          // Swap bytes in state.
-          istate_new  = jstate;
-          istate_addr = ip_new;
-          istate_we   = 1'h1;
-
-          jstate_new  = istate;
-          jstate_addr = jp_new;
-          jstate_we   = 1'h1;
-        end
+      if (init_state) begin
+        state_inew  = ip_reg;
+        state_iaddr = ip_reg;
+        state_iwe   = 1'h1;
       end
 
-      kp            = istate + jstate;
-      tmp_keystream = state[kp];
+      if (update_state) begin
+        state_inew  = jstate;
+        state_iaddr = ip_new;
+        state_iwe   = 1'h1;
+
+        state_jnew  = istate;
+        state_jaddr = jp_new;
+        state_jwe   = 1'h1;
+      end
+
+
+      kp = istate + jstate;
+      if (kdata_en)
+        kdata = state[kp];
     end
 
 
@@ -243,7 +243,6 @@ module rc4_core(
     begin : rc4_ctrl
       init_state   = 1'h0;
       update_state = 1'h0;
-      reset_ptrs   = 1'h0;
       ready_new    = 1'h0;
       ready_we     = 1'h0;
       ip_rst       = 1'h0;
@@ -253,20 +252,23 @@ module rc4_core(
       ksa_mode     = 1'h0;
       init_state   = 1'h0;
       update_state = 1'h0;
+      kdata_en     = 1'h0;
       rc4_ctrl_new = CTRL_IDLE;
       rc4_ctrl_we  = 1'h0;
 
       case (rc4_ctrl_reg)
         CTRL_IDLE : begin
           if (init) begin
+            ip_rst       = 1'h1;
+            jp_rst       = 1'h1;
+            init_state   = 1'h1;
             ready_new    = 1'h0;
             ready_we     = 1'h1;
-            reset_ptrs   = 1'h1;
             rc4_ctrl_new = CTRL_INIT;
             rc4_ctrl_we  = 1'h1;
           end
 
-          else if (next) begin
+          if (next) begin
             rc4_ctrl_new = CTRL_NEXT;
             rc4_ctrl_we  = 1'h1;
           end
@@ -274,12 +276,37 @@ module rc4_core(
 
 
         CTRL_INIT : begin
+          init_state = 1'h1;
+          ip_nxt     = 1'h1;
+
+          if (ip_new == 8'h0) begin
+            rc4_ctrl_new = CTRL_KSA;
+            rc4_ctrl_we  = 1'h1;
+          end
+        end
+
+
+        CTRL_KSA : begin
+          ip_nxt       = 1'h1;
+          jp_nxt       = 1'h1;
+          ksa_mode     = 1'h1;
+          update_state = 1'h1;
+
+          if (ip_new == 8'h0) begin
+            ready_new    = 1'h1;
+            ready_we     = 1'h1;
+            rc4_ctrl_new = CTRL_IDLE;
+            rc4_ctrl_we  = 1'h1;
+          end
         end
 
 
         CTRL_NEXT : begin
+          ready_new    = 1'h1;
+          ready_we     = 1'h1;
+          rc4_ctrl_new = CTRL_IDLE;
+          rc4_ctrl_we  = 1'h1;
         end
-
 
         default : begin
         end
