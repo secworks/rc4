@@ -43,6 +43,7 @@ module tb_rc4_core();
   parameter DEBUG = 1;
 
   parameter CLK_HALF_PERIOD = 2;
+  parameter CLK_PERIOD = 2 * CLK_HALF_PERIOD;
 
 
   //----------------------------------------------------------------
@@ -102,7 +103,6 @@ module tb_rc4_core();
       if (DEBUG)
         begin
           dump_dut_state();
-
         end
     end
 
@@ -114,8 +114,18 @@ module tb_rc4_core();
   //----------------------------------------------------------------
   task dump_dut_state;
     begin
+      $display("--------------------------------------");
       $display("State of DUT at cycle %08d", cycle_ctr);
+      $display("inputs and outputs:");
+      $display("init: 0x%1x, init: 0x%1x", dut.init, dut.next);
       $display("");
+
+      $display("Control:");
+      $display("ip_reg: 0x%02x, ip_new: 0x%02x, ip_we: 0x%1x, ip_rst: 0x%1x, ip_nxt: 0x%1x",
+               dut.ip_reg, dut.ip_new, dut.ip_we, dut.ip_rst, dut.ip_nxt);
+      $display("jp_reg: 0x%02x, jp_new: 0x%02x, jp_we: 0x%1x, jp_rst: 0x%1x, jp_nxt: 0x%1x",
+               dut.jp_reg, dut.jp_new, dut.jp_we, dut.jp_rst, dut.jp_nxt);
+      $display("rc4_ctrl_reg: 0x02x", dut.rc4_ctrl_reg);
       $display("");
     end
   endtask // dump_dut_state
@@ -124,22 +134,22 @@ module tb_rc4_core();
   //----------------------------------------------------------------
   // dump_state_mem()
   //
-  // Dump the state mem.
+  // Dump the state array.
   //----------------------------------------------------------------
-//  task dump_state_mem;
-//    reg [8 : 0] i;
-//    begin
-//      $display("State memory");
-//      $display("------------");
-//
-//      for (i = 0 ; i < 256 ; i = i + 1)
-//        begin
-//          $display("state_mem[0x%02x] = 0x%02x", i[7 : 0],
-//                   dut.smem.state_mem[i[7 : 0]]);
-//        end
-//      $display("");
-//    end
-//  endtask // dump_state_mem
+  task dump_state_mem;
+    reg [8 : 0] i;
+    begin
+      $display("State");
+      $display("-----");
+
+      for (i = 0 ; i < 256 ; i = i + 1)
+        begin
+          $display("state[0x%02x] = 0x%02x", i[7 : 0],
+                   dut.state[i[7 : 0]]);
+        end
+      $display("");
+    end
+  endtask // dump_state_mem
 
 
   //----------------------------------------------------------------
@@ -149,7 +159,7 @@ module tb_rc4_core();
     begin
       $display("*** Toggle reset.");
       tb_reset_n = 0;
-      #(4 * CLK_HALF_PERIOD);
+      #(2 * CLK_PERIOD);
       tb_reset_n = 1;
     end
   endtask // reset_dut
@@ -197,6 +207,24 @@ module tb_rc4_core();
 
 
   //----------------------------------------------------------------
+  // Test that the state is initialized correctly.
+  //----------------------------------------------------------------
+  task test_init;
+    begin
+      tc_ctr = tc_ctr + 1;
+
+      tb_init = 1'h1;
+      #(2 * CLK_PERIOD);
+
+      tb_init = 1'h0;
+      #(10 * CLK_PERIOD);
+
+      dump_state_mem();
+    end
+  endtask // test_init
+
+
+  //----------------------------------------------------------------
   // rc4_core_test
   //
   // The main test functionality.
@@ -209,9 +237,9 @@ module tb_rc4_core();
 
       dump_dut_state();
       reset_dut();
+      dump_state_mem();
 
-      dump_dut_state();
-      reset_dut();
+      test_init();
 
       display_test_result();
       $display("   *** Testbench for rc4_core completed ***");
