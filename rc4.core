@@ -5,14 +5,12 @@ name : secworks:crypto:rc4:0
 filesets:
   rtl:
     files:
-      - src/rtl/rc4.v
-      - src/rtl/rc4_key_mem.v
-      - src/rtl/rc4_state_mem.v
+      - src/rtl/rc4_core.v
     file_type : verilogSource
 
   tb:
     files:
-      - src/tb/tb_rc4.v
+      - src/tb/tb_rc4_core.v
     file_type : verilogSource
 
   openlane: {files : [data/sky130.tcl : {file_type : tclSource}]}
@@ -27,14 +25,14 @@ targets:
     tools:
       verilator:
         mode : lint-only
-    toplevel : rc4
+    toplevel : rc4_core
 
   sky130:
     default_tool: openlane
     filesets: [rtl, openlane]
-    toplevel: rc4
+    toplevel: rc4_core
 
-  tb_rc4: &tb
+  tb_rc4_core: &tb
     default_tool: icarus
     filesets: [rtl, tb]
-    toplevel : tb_rc4
+    toplevel : tb_rc4_core
