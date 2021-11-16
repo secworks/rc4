@@ -119,7 +119,7 @@ module rc4_core(
       integer i;
 
       if (!reset_n) begin
-        for (i = 0 ; i < 64 ; i = i + 1) begin
+        for (i = 0 ; i < 256 ; i = i + 1) begin
           state[i] <= 8'h0;
         end
 
