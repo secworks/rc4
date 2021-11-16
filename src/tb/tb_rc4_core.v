@@ -123,6 +123,8 @@ module tb_rc4_core();
       $display("");
 
       $display("State:");
+      $display("init_state: 0x%1x, update_state: 0x%1x, ksa_mode: 0x%1x",
+               dut.init_state, dut.update_state, dut.ksa_mode);
       $display("state_iwe: 0x%1x, state_iaddr: 0x%02x, state_inew: 0x%02x",
                dut.state_iwe, dut.state_iaddr, dut.state_inew);
       $display("state_jwe: 0x%1x, state_jaddr: 0x%02x, state_jnew: 0x%02x",
@@ -146,15 +148,18 @@ module tb_rc4_core();
   // Dump the state array.
   //----------------------------------------------------------------
   task dump_state_mem;
-    reg [8 : 0] i;
+    integer i;
     begin
       $display("State");
       $display("-----");
 
-      for (i = 0 ; i < 256 ; i = i + 1)
+      for (i = 0 ; i < 32 ; i = i + 1)
         begin
-          $display("state[0x%02x] = 0x%02x", i[7 : 0],
-                   dut.state[i[7 : 0]]);
+          $display("state[0x%02x]: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x",
+                   i, dut.state[i * 8 + 0], dut.state[i * 8 + 1],
+                   dut.state[i * 8 + 2], dut.state[i * 8 + 3],
+                   dut.state[i * 8 + 4], dut.state[i * 8 + 5],
+                   dut.state[i * 8 + 6], dut.state[i * 8 + 7]);
         end
       $display("");
     end
@@ -190,7 +195,7 @@ module tb_rc4_core();
       tb_reset_n = 1'h0;
       tb_init    = 1'h0;
       tb_next    = 1'h0;
-      tb_key     = 256'h1f1e1d1c1a19181716151413121110_0f0e0d0c0b0a09080706050403020100;
+      tb_key     = 256'h0;
       tb_keylen  = 1'h0;
     end
   endtask // init_dut
@@ -222,11 +227,23 @@ module tb_rc4_core();
     begin
       tc_ctr = tc_ctr + 1;
 
+//      tb_key     = 256'h1f1e1d1c1a19181716151413121110_0f0e0d0c0b0a09080706050403020100;
+      tb_key = {32{8'h02}};
+      tb_keylen  = 1'h1;
+
+      $display("Starting init");
       tb_init = 1'h1;
       #(2 * CLK_PERIOD);
 
       tb_init = 1'h0;
       #(10 * CLK_PERIOD);
+
+      while (!tb_ready) begin
+      #(CLK_PERIOD);
+      end
+      #(CLK_PERIOD);
+
+      $display("Init should be done. Dumping state.");
 
       dump_state_mem();
     end
