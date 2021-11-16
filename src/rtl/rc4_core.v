@@ -57,10 +57,12 @@ module rc4_core(
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
-  localparam CTRL_IDLE = 2'h0;
-  localparam CTRL_INIT = 2'h1;
-  localparam CTRL_KSA  = 2'h2;
-  localparam CTRL_NEXT = 2'h3;
+  localparam CTRL_IDLE  = 3'h0;
+  localparam CTRL_INIT0 = 3'h1;
+  localparam CTRL_INIT  = 3'h2;
+  localparam CTRL_KSA0  = 3'h3;
+  localparam CTRL_KSA   = 3'h4;
+  localparam CTRL_NEXT  = 3'h5;
 
 
   //----------------------------------------------------------------
@@ -90,8 +92,8 @@ module rc4_core(
   reg          ready_new;
   reg          ready_we;
 
-  reg [1 : 0]  rc4_ctrl_reg;
-  reg [1 : 0]  rc4_ctrl_new;
+  reg [2 : 0]  rc4_ctrl_reg;
+  reg [2 : 0]  rc4_ctrl_new;
   reg          rc4_ctrl_we;
 
 
@@ -264,7 +266,7 @@ module rc4_core(
             init_state   = 1'h1;
             ready_new    = 1'h0;
             ready_we     = 1'h1;
-            rc4_ctrl_new = CTRL_INIT;
+            rc4_ctrl_new = CTRL_INIT0;
             rc4_ctrl_we  = 1'h1;
           end
 
@@ -277,14 +279,34 @@ module rc4_core(
         end
 
 
+        CTRL_INIT0 : begin
+          init_state = 1'h1;
+          ip_nxt     = 1'h1;
+          rc4_ctrl_new = CTRL_INIT;
+          rc4_ctrl_we  = 1'h1;
+        end
+
+
         CTRL_INIT : begin
           init_state = 1'h1;
           ip_nxt     = 1'h1;
 
-          if (ip_reg == 8'h0) begin
-            rc4_ctrl_new = CTRL_KSA;
+          if (ip_reg == 8'h00) begin
+            ip_nxt       = 1'h0;
+            ip_rst       = 1'h1;
+            rc4_ctrl_new = CTRL_KSA0;
             rc4_ctrl_we  = 1'h1;
           end
+        end
+
+
+        CTRL_KSA0 : begin
+          ip_nxt       = 1'h1;
+          jp_nxt       = 1'h1;
+          ksa_mode     = 1'h1;
+          update_state = 1'h1;
+          rc4_ctrl_new = CTRL_KSA;
+          rc4_ctrl_we  = 1'h1;
         end
 
 
