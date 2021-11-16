@@ -117,7 +117,16 @@ module tb_rc4_core();
       $display("--------------------------------------");
       $display("State of DUT at cycle %08d", cycle_ctr);
       $display("inputs and outputs:");
-      $display("init: 0x%1x, init: 0x%1x", dut.init, dut.next);
+      $display("init: 0x%1x, next: 0x%1x", dut.init, dut.next);
+      $display("keylen: 0x%1x, key: 0x%064x", dut.keylen, dut.key);
+      $display("ready: 0x%1x, keystream: 0x%02x", dut.ready, dut.keystream);
+      $display("");
+
+      $display("State:");
+      $display("state_iwe: 0x%1x, state_iaddr: 0x%02x, state_inew: 0x%02x",
+               dut.state_iwe, dut.state_iaddr, dut.state_inew);
+      $display("state_jwe: 0x%1x, state_jaddr: 0x%02x, state_jnew: 0x%02x",
+               dut.state_jwe, dut.state_jaddr, dut.state_jnew);
       $display("");
 
       $display("Control:");
@@ -125,7 +134,7 @@ module tb_rc4_core();
                dut.ip_reg, dut.ip_new, dut.ip_we, dut.ip_rst, dut.ip_nxt);
       $display("jp_reg: 0x%02x, jp_new: 0x%02x, jp_we: 0x%1x, jp_rst: 0x%1x, jp_nxt: 0x%1x",
                dut.jp_reg, dut.jp_new, dut.jp_we, dut.jp_rst, dut.jp_nxt);
-      $display("rc4_ctrl_reg: 0x02x", dut.rc4_ctrl_reg);
+      $display("rc4_ctrl_reg: 0x%02x", dut.rc4_ctrl_reg);
       $display("");
     end
   endtask // dump_dut_state
